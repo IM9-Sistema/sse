@@ -17,9 +17,9 @@ router = APIRouter(prefix='/positions')
 async def get_positions(background_tasks: fastapi.background.BackgroundTasks, tracker: List[int] = Query(None)):
     # Setup handler
     if tracker:
-        handler: QueuedHandler = pyding.queue('position.message', tracker_id=pyding.Contains(tracker))
+        handler: QueuedHandler = pyding.queue('position.message', tracker_id=pyding.Contains(tracker), return_handler=True)
     else:
-        handler: QueuedHandler = pyding.queue('position.message', tracker_id=pyding.Contains(tracker))
+        handler: QueuedHandler = pyding.queue('position.message', tracker_id=pyding.Contains(tracker), return_handler=True)
     queue: Queue = handler.get_queue()
     background_tasks.add_task(lambda h: h.unregister(), handler)
     
