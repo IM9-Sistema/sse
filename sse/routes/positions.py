@@ -21,7 +21,12 @@ async def get_positions(background_tasks: fastapi.background.BackgroundTasks, tr
     else:
         handler: QueuedHandler = pyding.queue('position.message', return_handler=True)
     queue: Queue = handler.get_queue()
-    background_tasks.add_task(lambda h: h.unregister(), handler)
+
+    def unregister(handler: QueuedHandler):
+        logger.info(f"Closing handler ({handler})")
+        handler.unregister()
+    
+    background_tasks.add_task(unregister, handler)
     
     def queue_positions(queue):
         while True:
