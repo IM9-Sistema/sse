@@ -9,7 +9,6 @@ class DataGather(Worker):
         while True:
             async for message, id in consume_from_topic('positions'):
                 pyding.call('position.message', message=message, id=id, tracker_id=message['rastreador']['id'], **message)
-                pyding.call('position.message', message=message, id=id, tracker_id=6952, **message)
 
     @classmethod
     def begin(cls):
