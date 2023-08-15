@@ -1,11 +1,14 @@
-from fastapi import Query
+from fastapi import Depends, Query
 from fastapi.routing import APIRouter
 from fastapi.responses import StreamingResponse
 import pyding
 from pyding.structures import QueuedHandler
+from libs.auth import get_current_user
 import json
+from libs.structures import TokenData
+from libs.database import clients
 from queue import Queue, Empty
-from typing import List
+from typing import Annotated, List
 import logging
 import fastapi
 
@@ -13,13 +16,41 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix='/positions')
 
-@router.get('/')
-async def get_positions(background_tasks: fastapi.background.BackgroundTasks, tracker: List[int] = Query(None)):
+def queue_positions(queue):
+    while True:
+        try:
+            data = queue.get(timeout=5)
+            yield f"id: {data['id']}\nevent: position_update\ndata: {json.dumps({'type': 1, 'data': data['message']})}\n\n"
+        except Empty:
+            yield 'id: -1\nevent: keep-alive\ndata: {}\n\n'
+
+@router.get('/',
+            responses={
+                200: {
+                    'content': {
+                        'text/event-stream': "id: int\nevent: position_update\ndata: {}\n\n"
+                    },
+                    'description': 'Returns a event-stream whenever a tracker updates its position'
+                }
+            }
+        )
+async def get_positions(background_tasks: fastapi.background.BackgroundTasks, \
+                        token: str, \
+                        tracker: List[int] = Query(None),
+                        clientId: int = Query(None),
+                        sleep: int = Query(0, description='Sleep time between ')):
     # Setup handler
+    current_user = int(get_current_user(token))
+
+    args = {}
+
     if tracker:
-        handler: QueuedHandler = pyding.queue('position.message', tracker_id=pyding.Contains(tracker), return_handler=True)
-    else:
-        handler: QueuedHandler = pyding.queue('position.message', return_handler=True)
+        args['tracker_id'] = pyding.Contains(tracker)
+
+    if clientId:
+        args['tracker_id'] = pyding.Contains(clients.get_trackers(clientId, current_user))
+
+    handler: QueuedHandler = pyding.queue('position.message', **args, return_handler=True)
     queue: Queue = handler.get_queue()
 
     def unregister(handler: QueuedHandler):
@@ -27,13 +58,5 @@ async def get_positions(background_tasks: fastapi.background.BackgroundTasks, tr
         handler.unregister()
     
     background_tasks.add_task(unregister, handler)
-    
-    def queue_positions(queue):
-        while True:
-            try:
-                data = queue.get(timeout=5)
-                yield f"id: {data['id']}\nevent: position_update\ndata: {json.dumps({'type': 1, 'data': data['message']})}\n\n"
-            except Empty:
-                yield 'id: -1\nevent: keep-alive\ndata: {}\n\n'
 
     return StreamingResponse(queue_positions(queue), media_type="text/event-stream")
