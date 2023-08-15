@@ -6,9 +6,9 @@ database: Database = None
 @Database.context(DatabaseType.PRODUCAO)
 def get_trackers(client_id: int, user_id: int):
     print(f"{user_id!r}, {client_id!r}")
-    data = database.select("""
+    data = database.select(f"""
                     DECLARE @USUARIO int = ?;
-                    DECLARE @CLIENTE int = ?;
+                    {'DECLARE @CLIENTE int = ?;' if client_id else ''}
                     SELECT
                         gar.ID_RASTREAVEL
                     FROM GRID_ATIVADOS_RASTREAMENTO AS gar
@@ -26,6 +26,6 @@ def get_trackers(client_id: int, user_id: int):
                                     )
                                 )
                                 )
-                        ) AND (ID_CLIENTE = @CLIENTE OR ID_CLIENTE_INSTALADO = @CLIENTE)
-                    """, [user_id, client_id])
+                        ) {'AND (ID_CLIENTE = @CLIENTE OR ID_CLIENTE_INSTALADO = @CLIENTE)' if client_id else ''}
+                    """, [user_id, *[client_id if client_id else []]])
     return [str(i['ID_RASTREAVEL']) for i in data]

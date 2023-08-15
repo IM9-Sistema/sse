@@ -6,7 +6,7 @@ from pyding.structures import QueuedHandler
 from libs.auth import get_current_user
 import json
 from libs.structures import TokenData
-from libs.database import clients
+from libs.database import trackers, users
 from queue import Queue, Empty
 from typing import Annotated, List
 import logging
@@ -40,15 +40,18 @@ async def get_positions(background_tasks: fastapi.background.BackgroundTasks, \
                         clientId: int = Query(None),
                         sleep: int = Query(0, description='Sleep time between ')):
     # Setup handler
-    current_user = int(get_current_user(token))
+    current_user = users.get_user(int(get_current_user(token)))
 
     args = {}
 
     if tracker:
         args['tracker_id'] = pyding.Contains(tracker)
 
-    if clientId:
-        args['tracker_id'] = pyding.Contains(clients.get_trackers(clientId, current_user))
+    elif clientId:
+        args['tracker_id'] = pyding.Contains(trackers.get_trackers(clientId, current_user))
+
+    elif current_user['id_nivel_acesso'] < 1:
+        args['tracker_id'] = pyding.Contains(trackers.get_trackers(current_user))
 
     handler: QueuedHandler = pyding.queue('position.message', **args, return_handler=True)
     queue: Queue = handler.get_queue()
