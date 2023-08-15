@@ -60,7 +60,6 @@ class Database(object):
                                         f"PWD={environ.get('DATABASE_PWD')};",
                                         autocommit=self.autocommit
                                         )
-        self.connection.add_output_converter(pyodbc.SQL_TYPE_TIMESTAMP, Database.datetime_converter)
         logger.debug("Connected")
 
     @property
