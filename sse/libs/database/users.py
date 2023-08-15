@@ -11,4 +11,4 @@ def get_user(user_id: int):
                            NM_NOME
                         FROM CADASTRO_USUARIO
                         WHERE CD_REGISTRO_USUARIO = ?
-                           """, [user_id])
+                           """, [user_id])[0]
