@@ -40,7 +40,8 @@ async def get_positions(background_tasks: fastapi.background.BackgroundTasks, \
                         clientId: int = Query(None),
                         sleep: int = Query(0, description='Sleep time between ')):
     # Setup handler
-    current_user = users.get_user(int(get_current_user(token)))
+    current_user = int(get_current_user(token))
+    user_data = users.get_user(current_user)
 
     args = {}
 
@@ -50,7 +51,7 @@ async def get_positions(background_tasks: fastapi.background.BackgroundTasks, \
     elif clientId:
         args['tracker_id'] = pyding.Contains(trackers.get_trackers(clientId, current_user))
 
-    elif current_user['id_nivel_acesso'] < 1:
+    elif user_data['id_nivel_acesso'] < 1:
         args['tracker_id'] = pyding.Contains(trackers.get_trackers(current_user))
 
     handler: QueuedHandler = pyding.queue('position.message', **args, return_handler=True)
