@@ -4,7 +4,7 @@ from libs.structures import DatabaseType
 database: Database = None
 
 @Database.context(DatabaseType.PRODUCAO)
-def get_trackers(client_id: int, user_id: int):
+def get_trackers(client_id: int = None, user_id: int = None):
     print(f"{user_id!r}, {client_id!r}")
     data = database.select(f"""
                     DECLARE @USUARIO int = ?;
