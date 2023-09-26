@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix='/positions')
 
 def queue_positions(queue):
+    yield 'id: -1\nevent: connected\ndata: {}\n\n'
     while True:
         try:
             data = queue.get(timeout=5)
