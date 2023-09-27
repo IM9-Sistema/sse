@@ -38,8 +38,7 @@ def queue_positions(queue):
 async def get_positions(background_tasks: fastapi.background.BackgroundTasks, \
                         token: str, \
                         tracker: List[int] = Query(None),
-                        clientId: int = Query(None),
-                        sleep: int = Query(0, description='Sleep time between ')):
+                        clientId: int = Query(None)):
     # Setup handler
     current_user = int(get_current_user(token))
     user_data = users.get_user(current_user)
