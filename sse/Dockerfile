@@ -12,4 +12,4 @@ RUN echo 'export PATH="$PATH:/opt/mssql-tools/bin"' >> ~/.bashrc
 RUN apt-get install -y unixodbc-dev
 RUN apt-get install -y libgssapi-krb5-2
 
-CMD cd /sse/ && uvicorn main:app --host 0.0.0.0
+CMD cd /sse/ && uvicorn main:app --host 0.0.0.0 --workers 4
