@@ -6,7 +6,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class DataGather(Worker):
+class PositionWorker(Worker):
     async def work(self):
         while True:
             async for message, id in consume_from_topic('positions'):
@@ -15,10 +15,21 @@ class DataGather(Worker):
                 except KeyError:
                     logger.critical("Failed to get data from kafka.")
                     logger.critical(f"{message}")
+    @classmethod
+    def begin(cls):
+        instance = cls()
+        instance.start()
+        return instance
+
+
+class AlertWorker(Worker):
+    async def work(self):
+        while True:
+            async for message, id in consume_from_topic('alerts'):
+                pyding.call('alert.message', **message)
 
     @classmethod
     def begin(cls):
         instance = cls()
         instance.start()
         return instance
-    
