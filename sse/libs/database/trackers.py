@@ -31,4 +31,4 @@ def get_trackers(client_id: int = None, user_id: int = None):
                                 )
                         ) {'AND (ID_CLIENTE = @CLIENTE OR ID_CLIENTE_INSTALADO = @CLIENTE)' if client_id else ''}
                     """, values)
-    return [str(i['ID_RASTREAVEL']) for i in data]
+    return [i['ID_RASTREAVEL'] for i in data]
