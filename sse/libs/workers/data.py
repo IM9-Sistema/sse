@@ -28,7 +28,7 @@ class AlertsGather(Worker):
         while True:
             async for message, id in consume_from_topic('alerts'):
                 try:
-                    pyding.call('alerts.message', message=message, **message)
+                    pyding.call('alerts.message', id=id, message=message, **message)
                 except KeyError:
                     logger.critical("Failed to get data from kafka.")
                     logger.critical(f"{message}")
