@@ -21,7 +21,7 @@ def queue_alerts(queue):
     while True:
         try:
             data = queue.get(timeout=5)
-            yield f"id: {data['id']}\nevent: position_update\ndata: {json.dumps({'type': 1, 'data': data['message']})}\n\n"
+            yield f"id: {data['id']}\nevent: alerts_update\ndata: {json.dumps({'type': 1, 'data': data['message']})}\n\n"
         except Empty:
             yield 'id: -1\nevent: keep-alive\ndata: {}\n\n'
 
