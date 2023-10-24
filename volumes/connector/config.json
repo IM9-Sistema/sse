@@ -1,0 +1,19 @@
+{
+	"name":"db-connector",
+	"config":{
+	   "connector.class":"io.debezium.connector.sqlserver.SqlServerConnector",
+	   "tasks.max":"1",
+	   "database.names":"EVENTOS",
+	   "database.hostname":"$DATABASE_HOST",
+	   "database.port":"1433",
+	   "database.user":"sa",
+	   "database.password":"$DATABASE_PWD",
+	   "database.history.kafka.bootstrap.servers":"$KAFKA_ADDRESS",
+	   "database.history.kafka.topic":"schema-changes.db",
+	   "topic.prefix": "database.eventos",
+	   "database.encrypt": "false",
+	   "table.include.list": "dbo.TB_SISTEMA, dbo.TB_SISTEMA_TRATATIVAS",
+	   "schema.history.internal.kafka.topic": "internal-schema-changes.mssql",
+	   "schema.history.internal.kafka.bootstrap.servers": "$KAFKA_ADDRESS"
+	}
+ }	
