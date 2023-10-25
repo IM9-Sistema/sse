@@ -93,7 +93,7 @@ def queue_alerts(queue):
 
                 case _:
                     event = 'unknown_event'
-                    output = data
+                    output = data["message"]
 
             yield f"id: {data['id']}\n"
             yield f"event: {event}\n"
