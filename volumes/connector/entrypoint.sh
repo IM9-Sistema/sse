@@ -8,6 +8,7 @@ echo -e $(date) "\n\n--------------\n\o/ Kafka Connect is ready! Listener HTTP s
 
 # Now create your connector
 ## Inline config example: 
+curl -X DELETE -H "Content-Type: application/json" -d @- http://connector:8083/connectors/db-connector
 eval "cat <<EOF
 $(cat config.json)
 EOF" | curl -X POST -H "Content-Type: application/json" -d @- http://connector:8083/connectors
