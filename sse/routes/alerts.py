@@ -20,10 +20,37 @@ def queue_alerts(queue):
     yield 'id: -1\nevent: connected\ndata: {}\n\n'
     while True:
         try:
+            
             data = queue.get(timeout=5)
-            yield f"id: {data['id']}\nevent: alerts_update\ndata: {json.dumps({'data': data['message']})}\n\n"
+            match data['message']:
+                case {"schema": {"name": "database.eventos.EVENTOS.dbo.TB_SISTEMA.Envelope", **_sk}, "payload": {"op": "c", "before": None, "after": after, **_pk}, **_k}:
+                    event = "alert_create"
+                    output = after
+                
+                case {"schema": {"name": "database.eventos.EVENTOS.dbo.TB_SISTEMA.Envelope", **_sk}, "payload": {"op": "u", "before": before, "after": after, **_pk}, **_k}:
+                    event = "alert_update"
+                    output = after
+                
+                case {"schema": {"name": "database.eventos.EVENTOS.dbo.TB_SISTEMA_TRATATIVAS.Envelope", **_sk}, "payload": {"op": "u", "before": before, "after": after, **_pk}, **_k}:
+                    event = "notation_update"
+                    output = after
+                
+                case {"schema": {"name": "database.eventos.EVENTOS.dbo.TB_SISTEMA_TRATATIVAS.Envelope", **_sk}, "payload": {"op": "c", "before": None, "after": after, **_pk}, **_k}:
+                    event = "notation_create"
+                    output = after
+
+                case _:
+                    event = 'unknown_event'
+                    output = data
+
+            yield f"id: {data['id']}\n"
+            yield f"event: {event}\n"
+            yield f"data: {json.dumps({'data': output})}\n\n"
         except Empty:
             yield 'id: -1\nevent: keep-alive\ndata: {}\n\n'
+
+
+
 
 @router.get('/',
             responses={
