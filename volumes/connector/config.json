@@ -14,6 +14,7 @@
 	   "database.encrypt": "false",
 	   "table.include.list": "dbo.TB_SISTEMA, dbo.TB_SISTEMA_TRATATIVAS",
 	   "schema.history.internal.kafka.topic": "internal-schema-changes.mssql",
-	   "schema.history.internal.kafka.bootstrap.servers": "$KAFKA_ADDRESS"
+	   "schema.history.internal.kafka.bootstrap.servers": "$KAFKA_ADDRESS",
+	   "poll.interval.ms": "500"
 	}
  }	
