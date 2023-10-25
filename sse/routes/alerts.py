@@ -89,11 +89,11 @@ def queue_alerts(queue):
                 
                 case {"schema": {"name": "database.eventos.EVENTOS.dbo.TB_SISTEMA.Envelope", **_sk}, "payload": {"op": "d", "before": before, "after": after, **_pk}, **_k}:
                     event = "alert_delete"
-                    output = after
+                    output = before
                 
                 case {"schema": {"name": "database.eventos.EVENTOS.dbo.TB_SISTEMA_TRATATIVAS.Envelope", **_sk}, "payload": {"op": "d", "before": before, "after": after, **_pk}, **_k}:
                     event = "notation_delete"
-                    output = after
+                    output = before
                 
                 case {"schema": {"name": "database.eventos.EVENTOS.dbo.TB_SISTEMA_TRATATIVAS.Envelope", **_sk}, "payload": {"op": "c", "before": None, "after": after, **_pk}, **_k}:
                     event = "notation_create"
