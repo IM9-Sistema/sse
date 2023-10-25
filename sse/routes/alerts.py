@@ -97,14 +97,14 @@ def queue_alerts(queue):
 
             yield f"id: {data['id']}\n"
             yield f"event: {event}\n"
-            yield f"data: {json.dumps({'data': convert(output)})}\n\n"
+            yield f"data: {json.dumps(convert(output))}\n\n"
         except Empty:
             yield 'id: -1\nevent: keep-alive\ndata: {}\n\n'
 
 
 
 
-@router.get('/',
+@router.get('/subscribe',
             responses={
                 200: {
                     'content': {
