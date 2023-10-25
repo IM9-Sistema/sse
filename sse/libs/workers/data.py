@@ -26,7 +26,7 @@ class PositionGather(Worker):
 class AlertsGather(Worker):
     async def work(self):
         while True:
-            async for message, id in consume_from_topic('alerts'):
+            async for message, id in consume_from_topic('database.eventos.EVENTOS.dbo.TB_SISTEMA_TRATATIVAS', 'database.eventos.EVENTOS.dbo.TB_SISTEMA'):
                 try:
                     pyding.call('alerts.message', id=id, message=message, **message)
                 except KeyError:
