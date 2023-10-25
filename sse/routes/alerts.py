@@ -16,6 +16,58 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix='/alerts')
 
+conversion_table = {
+    "CD_REGISTRO_TRATATIVAS": "id_notation",
+    "CD_ATENDIMENTO": "id_treatment",
+    "CD_USUARIO": "id_user",
+    "DT_TRATATIVA": "id_notation",
+    "DS_TRATATIVA": "notation_text",
+    "DS_POSICAO": "address",
+    "VL_LATITUDE": "latitude",
+    "VL_LONGITUDE": "longitude",
+    "VL_VELOCIDADE": "speed",
+    "CD_REGISTRO_SISTEMA": "alert_id",
+    "DT_CADASTRO": "created_when",
+    "CD_USUARIO_CRIOU": "created_user_id",
+    "VL_STATUS": "status_id",
+    "DT_PROCESSADO": "processed_when",
+    "VL_PROCESSADO": "processed_value",
+    "DT_CONFIRMACAO_PROCESSAMENTO": "processed_confirmation_when",
+    "DS_DESTINATARIO": "destinatario",
+    "ID_RASTREAVEL": "tracked_id",
+    "ID_EVENTO": "event_id",
+    "VL_PRIORIDADE_EVENTO": "priority_id",
+    "DS_EVENTO": "event_text",
+    "DT_ULTIMO_TRATAMENTO": "last_treatment_when",
+    "DT_REAGENDADA": "scheduled_to",
+    "CD_USUARIO_BAIXOU": "user_closed_id",
+    "DT_BAIXOU": "closed_when",
+    "NM_ULTIMO_TRATAMENTO": "last_treatment",
+    "DS_IGNICAO": "ignition",
+    "CD_CLIENTE": "client_id",
+    "CD_MOTORISTA": "driver_id",
+    "CD_VEICULO": "vehicle_id",
+    "CD_USUARIO_ULT_TRATAMENTO": "user_last_treatment_id",
+    "ID_TIPO_EQUIPAMENTO": "equipment_id",
+    "DS_TIPO_EQUIPAMENTO": "equipment",
+    "VL_INVISIVEL": "invisible",
+    "DS_FILE": "file",
+    "CD_AREARISCO": "id_risk_area",
+    "DS_TIPO_BLOQUEIO": "id_block_type",
+    "CD_USUARIO_INICIA_TRAT": "user_init_id",
+    "DS_TIPO_REDE": "network_type",
+    "DS_MOTIVO": "reason"
+}
+
+def convert(data: dict):
+    output = {}
+    for k, v in data.items():
+        if k in conversion_table:
+            output[conversion_table[k]] = v
+        else:
+            output[k] = v
+    return output
+
 def queue_alerts(queue):
     yield 'id: -1\nevent: connected\ndata: {}\n\n'
     while True:
@@ -45,7 +97,7 @@ def queue_alerts(queue):
 
             yield f"id: {data['id']}\n"
             yield f"event: {event}\n"
-            yield f"data: {json.dumps({'data': output})}\n\n"
+            yield f"data: {json.dumps({'data': convert(output)})}\n\n"
         except Empty:
             yield 'id: -1\nevent: keep-alive\ndata: {}\n\n'
 
