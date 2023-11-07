@@ -103,11 +103,12 @@ def queue_alerts(queue, alert_id = None):
                 case _:
                     event = 'unknown_event'
                     output = data["message"]
+            output = convert(output)
             if alert_id and "alert_id" in output and output["alert_id"] != alert_id:
                 yield f"id: {data['id']}\nevent: event-skip-notice\ndata: {{}}\n\n"
             yield f"id: {data['id']}\n"
             yield f"event: {event}\n"
-            yield f"data: {json.dumps(convert(output))}\n\n"
+            yield f"data: {json.dumps(output)}\n\n"
         except Empty:
             yield 'id: -1\nevent: keep-alive\ndata: {}\n\n'
 
