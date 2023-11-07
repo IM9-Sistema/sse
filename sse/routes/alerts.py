@@ -18,7 +18,7 @@ router = APIRouter(prefix='/alerts')
 
 conversion_table = {
     "CD_REGISTRO_TRATATIVAS": "id_notation",
-    "CD_ATENDIMENTO": "id_treatment",
+    "CD_ATENDIMENTO": "alert_id",
     "CD_USUARIO": "id_user",
     "DT_TRATATIVA": "id_notation",
     "DS_TRATATIVA": "notation_text",
@@ -68,12 +68,13 @@ def convert(data: dict):
             output[k] = v
     return output
 
-def queue_alerts(queue):
+def queue_alerts(queue, alert_id = None):
     yield 'id: -1\nevent: connected\ndata: {}\n\n'
     while True:
         try:
             
             data = queue.get(timeout=5)
+
             match data['message']:
                 case {"schema": {"name": "database.eventos.EVENTOS.dbo.TB_SISTEMA.Envelope", **_sk}, "payload": {"op": "c", "before": None, "after": after, **_pk}, **_k}:
                     event = "alert_create"
@@ -102,7 +103,8 @@ def queue_alerts(queue):
                 case _:
                     event = 'unknown_event'
                     output = data["message"]
-
+            if alert_id and "alert_id" in output and output["alert_id"] != alert_id:
+                yield f'id: {data['id']}\nevent: event-skip-notice\ndata: {{}}\n\n'
             yield f"id: {data['id']}\n"
             yield f"event: {event}\n"
             yield f"data: {json.dumps(convert(output))}\n\n"
@@ -123,7 +125,8 @@ def queue_alerts(queue):
             }
         )
 async def get_alerts(background_tasks: fastapi.background.BackgroundTasks, \
-                        token: str):
+                     token: str, \
+                     id: int = None):
     # Setup handler
     current_user = int(get_current_user(token))
     user_data = users.get_user(current_user)
@@ -148,4 +151,4 @@ async def get_alerts(background_tasks: fastapi.background.BackgroundTasks, \
     
     background_tasks.add_task(unregister, handler)
 
-    return StreamingResponse(queue_alerts(queue), media_type="text/event-stream")
+    return StreamingResponse(queue_alerts(queue, id), media_type="text/event-stream")
