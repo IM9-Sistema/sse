@@ -69,7 +69,7 @@ def convert(data: dict):
     return output
 
 def queue_alerts(queue, alert_id = None):
-    yield 'id: -1\nevent: connected\ndata: {}\n\n'
+    yield f'id: -1\nevent: connected\nfilter_id: {alert_id}\ndata: {{}}\n\n'
     while True:
         try:
             
