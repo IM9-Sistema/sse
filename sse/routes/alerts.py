@@ -104,7 +104,7 @@ def queue_alerts(queue, alert_id = None):
                     event = 'unknown_event'
                     output = data["message"]
             if alert_id and "alert_id" in output and output["alert_id"] != alert_id:
-                yield f'id: {data['id']}\nevent: event-skip-notice\ndata: {{}}\n\n'
+                yield f"id: {data['id']}\nevent: event-skip-notice\ndata: {{}}\n\n"
             yield f"id: {data['id']}\n"
             yield f"event: {event}\n"
             yield f"data: {json.dumps(convert(output))}\n\n"
