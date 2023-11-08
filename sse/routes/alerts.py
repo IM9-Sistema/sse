@@ -68,14 +68,16 @@ def convert(data: dict):
             output[k] = v
     return output
 
-def queue_alerts(queue, alert_id = None):
+def queue_alerts(queue, alert_id = None, id_rastreavel = None):
     yield f'id: -1\nevent: connected\nfilter_id: {alert_id}\ndata: {{}}\n\n'
+    last_data = {}
     while True:
         try:
             
             data = queue.get(timeout=5)
+            message: dict = data['message']
 
-            match data['message']:
+            match message:
                 case {"schema": {"name": "database.eventos.EVENTOS.dbo.TB_SISTEMA.Envelope", **_sk}, "payload": {"op": "c", "before": None, "after": after, **_pk}, **_k}:
                     event = "alert_create"
                     output = after
@@ -99,19 +101,21 @@ def queue_alerts(queue, alert_id = None):
                 case {"schema": {"name": "database.eventos.EVENTOS.dbo.TB_SISTEMA_TRATATIVAS.Envelope", **_sk}, "payload": {"op": "c", "before": None, "after": after, **_pk}, **_k}:
                     event = "notation_create"
                     output = after
-
+                case {"event": "anchor", "type": _type, "rastreavel_id": _rastr, "user_id": _user_id, "data": _data}:
+                    event = f"anchor_{_type}"
+                    output = {"id_rastreavel": _rastr, "data": _data}
                 case _:
                     event = 'unknown_event'
-                    output = data["message"]
-            output = convert(output)
-            if alert_id and "alert_id" in output and output["alert_id"] != alert_id:
-                yield f"id: {data['id']}\nevent: event-skip-notice\ndata: {{}}\n\n"
+                    output = message
+            output = convert(output) if isinstance(output, dict) else output
+            if (id_rastreavel and "id_rastreavel" in output and output["id_rastreavel"] != id_rastreavel) or (alert_id and "alert_id" in output and output["alert_id"] != alert_id):
+                yield f"id: {data['id']}\nevent: event-skip-notice\nskipped: {event}\ndata: {{}}\n\n"
                 continue
             yield f"id: {data['id']}\n"
             yield f"event: {event}\n"
             yield f"data: {json.dumps(output)}\n\n"
         except Empty:
-            yield 'id: -1\nevent: keep-alive\ndata: {}\n\n'
+            pass
 
 
 
@@ -128,7 +132,8 @@ def queue_alerts(queue, alert_id = None):
         )
 async def get_alerts(background_tasks: fastapi.background.BackgroundTasks, \
                      token: str, \
-                     id: int = None):
+                     id: int = None,
+                     id_rastreavel: int = None):
     # Setup handler
     current_user = int(get_current_user(token))
     user_data = users.get_user(current_user)
@@ -153,4 +158,4 @@ async def get_alerts(background_tasks: fastapi.background.BackgroundTasks, \
     
     background_tasks.add_task(unregister, handler)
 
-    return StreamingResponse(queue_alerts(queue, id), media_type="text/event-stream")
+    return StreamingResponse(queue_alerts(queue, id, id_rastreavel), media_type="text/event-stream")
