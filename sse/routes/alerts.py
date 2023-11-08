@@ -68,7 +68,7 @@ def convert(data: dict):
             output[k] = v
     return output
 
-def queue_alerts(queue, alert_id = None, id_rastreavel = None):
+def queue_alerts(queue, alert_id = None, id_rastreavel = None, events: list = None):
     yield f'id: -1\nevent: connected\nfilter_id: {alert_id}\ndata: {{}}\n\n'
     last_data = {}
     while True:
@@ -108,7 +108,7 @@ def queue_alerts(queue, alert_id = None, id_rastreavel = None):
                     event = 'unknown_event'
                     output = message
             output = convert(output) if isinstance(output, dict) else output
-            if (id_rastreavel and "id_rastreavel" in output and output["id_rastreavel"] != id_rastreavel) or (alert_id and "alert_id" in output and output["alert_id"] != alert_id):
+            if (events is not None and 'event_id' in output and output['event_id'] not in events) or (id_rastreavel is not None and "id_rastreavel" in output and output["id_rastreavel"] != id_rastreavel) or (alert_id is not None and "alert_id" in output and output["alert_id"] != alert_id):
                 yield f"id: {data['id']}\nevent: event-skip-notice\nskipped: {event}\ndata: {{}}\n\n"
                 continue
             yield f"id: {data['id']}\n"
@@ -133,7 +133,16 @@ def queue_alerts(queue, alert_id = None, id_rastreavel = None):
 async def get_alerts(background_tasks: fastapi.background.BackgroundTasks, \
                      token: str, \
                      id: int = None,
-                     id_rastreavel: int = None):
+                     id_rastreavel: int = None,
+                     type: int = None):
+    events = {
+        3: [1,3,4,5,6,7,8,9,10,11,12,14,15]
+    }
+    if type not in events:
+        raise HTTPException(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        detail='Invalid event-package id.'
+    )
     # Setup handler
     current_user = int(get_current_user(token))
     user_data = users.get_user(current_user)
@@ -158,4 +167,4 @@ async def get_alerts(background_tasks: fastapi.background.BackgroundTasks, \
     
     background_tasks.add_task(unregister, handler)
 
-    return StreamingResponse(queue_alerts(queue, id, id_rastreavel), media_type="text/event-stream")
+    return StreamingResponse(queue_alerts(queue, id, id_rastreavel, events[type]), media_type="text/event-stream")
