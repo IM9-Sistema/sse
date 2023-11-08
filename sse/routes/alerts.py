@@ -138,7 +138,7 @@ async def get_alerts(background_tasks: fastapi.background.BackgroundTasks, \
     events = {
         3: [1,3,4,5,6,7,8,9,10,11,12,14,15]
     }
-    if type not in events:
+    if type is not None and type not in events:
         raise HTTPException(
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
         detail='Invalid event-package id.'
@@ -167,4 +167,4 @@ async def get_alerts(background_tasks: fastapi.background.BackgroundTasks, \
     
     background_tasks.add_task(unregister, handler)
 
-    return StreamingResponse(queue_alerts(queue, id, id_rastreavel, events[type]), media_type="text/event-stream")
+    return StreamingResponse(queue_alerts(queue, id, id_rastreavel, events[type] if type else None), media_type="text/event-stream")
