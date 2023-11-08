@@ -109,7 +109,7 @@ def queue_alerts(queue, alert_id = None, id_rastreavel = None, events: list = No
                     output = message
             output = convert(output) if isinstance(output, dict) else output
             if (events is not None and 'event_id' in output and output['event_id'] not in events) or (id_rastreavel is not None and "id_rastreavel" in output and output["id_rastreavel"] != id_rastreavel) or (alert_id is not None and "alert_id" in output and output["alert_id"] != alert_id):
-                yield f"id: {data['id']}\nevent: event-skip-notice\nskipped: {event}\ndata: {{}}\n\n"
+                yield f"id: {data['id']}\nevent: event-skip-notice\nskipped: {event}\nmeta-event-id: {output['event_id'] if 'event_id' in output else 'Not defined.'}\ndata: {{}}\n\n"
                 continue
             yield f"id: {data['id']}\n"
             yield f"event: {event}\n"
