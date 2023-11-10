@@ -68,8 +68,14 @@ def convert(data: dict):
             output[k] = v
     return output
 
-def queue_alerts(queue, alert_id = None, id_rastreavel = None, events: list = None):
-    yield f'id: -1\nevent: connected\nfilter_id: {alert_id}\ndata: {{}}\n\n'
+def queue_alerts(queue, alert_id = None, events: list = None):
+    tracker_data = {}
+    if alert_id is not None:
+        yield f'id: -1\nevent: fetching_data\nalert_id: {alert_id}\ndata: {{}}\n\n'
+        tracker_data = trackers.get_tracker_info_by_event(alert_id)
+        yield f'id: -1\nevent: data_fetched\nalert_id: {alert_id}\ndata: {tracker_data}\n\n'
+
+    yield f'id: -1\nevent: connected\nalert_id: {alert_id}\ndata: {{}}\n\n'
     last_data = {}
     while True:
         try:
@@ -104,11 +110,24 @@ def queue_alerts(queue, alert_id = None, id_rastreavel = None, events: list = No
                 case {"event": "anchor", "type": _type, "rastreavel_id": _rastr, "user_id": _user_id, "data": _data}:
                     event = f"anchor_{_type}"
                     output = {"id_rastreavel": _rastr, "data": _data}
+                
+                case {"event": 'contacts', 'type': "insert"|"update" as type, "data": [{"id": id, "nome": nome, "fone": fone, "id_veiculo": id_veiculo, "ativo": active}, *_l],  **_d}:
+                    event = f"contacts_{type}"
+                    output = {"id": id, "name": nome, "phone": fone, "id_vehicle": id_veiculo, "active": active}
+                
+                case {"event": 'contacts', 'type': "delete" as type, "id_veiculo": id_veiculo, "id": id, **_d}:
+                    event = f"contacts_{type}"
+                    output = {"id": id}
+
                 case _:
                     event = 'unknown_event'
                     output = message
             output = convert(output) if isinstance(output, dict) else output
-            if (events is not None and 'event_id' in output and output['event_id'] not in events) or (id_rastreavel is not None and "id_rastreavel" in output and output["id_rastreavel"] != id_rastreavel) or (alert_id is not None and "alert_id" in output and output["alert_id"] != alert_id):
+            if (events is not None and 'event_id' in output and output['event_id'] not in events)\
+            or ('id_rastreavel' in tracker_data and "id_rastreavel" in output and output["id_rastreavel"] != tracker_data['id_rastreavel'])\
+            or ('id_veiculo' in tracker_data and "id_veiculo" in output and output["id_veiculo"] != tracker_data['id_veiculo'])\
+            or (alert_id is not None and "alert_id" in output and output["alert_id"] != alert_id):
+
                 yield f"id: {data['id']}\nevent: event-skip-notice\nskipped: {event}\nmeta-event-id: {output['event_id'] if 'event_id' in output else 'Not defined.'}\ndata: {{}}\n\n"
                 continue
             yield f"id: {data['id']}\n"
@@ -133,7 +152,6 @@ def queue_alerts(queue, alert_id = None, id_rastreavel = None, events: list = No
 async def get_alerts(background_tasks: fastapi.background.BackgroundTasks, \
                      token: str, \
                      id: int = None,
-                     id_rastreavel: int = None,
                      type: int = None):
     events = {
         3: [1,3,4,5,6,7,8,9,10,11,12,14,15]
@@ -146,7 +164,7 @@ async def get_alerts(background_tasks: fastapi.background.BackgroundTasks, \
     # Setup handler
     current_user = int(get_current_user(token))
     user_data = users.get_user(current_user)
-
+    
     args = {}
 
     if user_data['id_nivel_acesso'] < 1:
@@ -167,4 +185,4 @@ async def get_alerts(background_tasks: fastapi.background.BackgroundTasks, \
     
     background_tasks.add_task(unregister, handler)
 
-    return StreamingResponse(queue_alerts(queue, id, id_rastreavel, events[type] if type else None), media_type="text/event-stream")
+    return StreamingResponse(queue_alerts(queue, id, events[type] if type else None), media_type="text/event-stream")
