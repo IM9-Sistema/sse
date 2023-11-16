@@ -31,7 +31,7 @@ def queue_positions(queue):
                     'content': {
                         'text/event-stream': "id: int\nevent: position_update\ndata: {}\n\n"
                     },
-                    'description': 'Depricated. use /subscribe'
+                    'description': 'Returns a event-stream whenever a tracker updates its position'
                 }
             }
         )
@@ -41,7 +41,7 @@ def queue_positions(queue):
                     'content': {
                         'text/event-stream': "id: int\nevent: position_update\ndata: {}\n\n"
                     },
-                    'description': 'Returns a event-stream whenever a tracker updates its position'
+                    'description': 'Depricated. use /subscribe'
                 }
             }
         )
