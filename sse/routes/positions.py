@@ -25,6 +25,16 @@ def queue_positions(queue):
         except Empty:
             yield 'id: -1\nevent: keep-alive\ndata: {}\n\n'
 
+@router.get('/subscribe',
+            responses={
+                200: {
+                    'content': {
+                        'text/event-stream': "id: int\nevent: position_update\ndata: {}\n\n"
+                    },
+                    'description': 'Depricated. use /subscribe'
+                }
+            }
+        )
 @router.get('/',
             responses={
                 200: {
@@ -52,7 +62,8 @@ async def get_positions(background_tasks: fastapi.background.BackgroundTasks, \
         args['tracker_id'] = pyding.Contains(trackers.get_trackers(clientId, current_user))
 
     elif user_data['id_nivel_acesso'] < 1:
-        args['tracker_id'] = pyding.Contains(trackers.get_trackers(user_id=current_user))
+        print(t := trackers.get_trackers(user_id=current_user))
+        args['tracker_id'] = pyding.Contains(t)
 
     handler: QueuedHandler = pyding.queue('position.message', **args, return_handler=True)
     queue: Queue = handler.get_queue()
@@ -63,4 +74,4 @@ async def get_positions(background_tasks: fastapi.background.BackgroundTasks, \
     
     background_tasks.add_task(unregister, handler)
 
-    return StreamingResponse(queue_positions(queue), media_type="text/event-stream")
+    return StreamingResponse(queue_positions(queue, ), media_type="text/event-stream")
