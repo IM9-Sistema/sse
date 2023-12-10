@@ -44,11 +44,15 @@ class Database(object):
         return self.__globals
 
     def close(self, dont_commit=None):
-        if self.is_connected:
-            logger.debug("Connection closed")
-            if not dont_commit:
-                self.connection.commit()
-            self.connection.close()
+        try:
+            if self.is_connected:
+                logger.debug("Connection closed")
+                if not dont_commit:
+                    self.connection.commit()
+                self.connection.close()
+        except pyodbc.ProgrammingError:
+            logger.critical("Failed to close connection.")
+
         self.connection = None
 
     def connect(self):

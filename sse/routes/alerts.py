@@ -72,7 +72,13 @@ def queue_alerts(queue, alert_id = None, events: list = None):
     tracker_data = {}
     if alert_id is not None:
         yield f'id: -1\nevent: fetching_data\nalert_id: {alert_id}\ndata: {{}}\n\n'
-        tracker_data = trackers.get_tracker_info_by_event(alert_id)
+        while True:
+            try:
+                tracker_data = trackers.get_tracker_info_by_event(alert_id)
+                break
+            except:
+                logger.critical(f"Failed to fetch info for alert {alert_id}")
+                continue
         yield f'id: -1\nevent: data_fetched\nalert_id: {alert_id}\ndata: {tracker_data}\n\n'
 
     yield f'id: -1\nevent: connected\nalert_id: {alert_id}\ndata: {{}}\n\n'
@@ -175,8 +181,12 @@ async def get_alerts(background_tasks: fastapi.background.BackgroundTasks, \
     )
     # Setup handler
     current_user = int(get_current_user(token))
-    user_data = users.get_user(current_user)
-    
+    while True:
+        try:
+            user_data = users.get_user(current_user)
+            break
+        except:
+            continue
     args = {}
 
     if user_data['id_nivel_acesso'] < 1:
