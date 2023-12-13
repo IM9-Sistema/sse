@@ -5,8 +5,10 @@ from libs.workers.data import PositionGather, AlertsGather
 import logging
 import pyding
 
+logging.basicConfig(level=logging.INFO, handlers=[logging.StreamHandler(), logging.FileHandler(f'{int(time.time())}.log')])
+logging.getLogger('aiokafka.conn').setLevel(logging.NOTSET)
+logging.getLogger('aiokafka.consumer.fecther').setLevel(logging.NOTSET)
 
-logging.basicConfig(level=logging.DEBUG, handlers=[logging.StreamHandler(), logging.FileHandler(f'{int(time.time())}.log')])
 
 app = FastAPI()
 app.include_router(positions.router)
