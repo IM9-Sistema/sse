@@ -6,8 +6,7 @@ import logging
 import pyding
 
 logging.basicConfig(level=logging.DEBUG, handlers=[logging.StreamHandler(), logging.FileHandler(f'{int(time.time())}.log')])
-logging.getLogger('aiokafka.conn').setLevel(logging.NOTSET)
-logging.getLogger('aiokafka.consumer.fecther').setLevel(logging.NOTSET)
+logging.getLogger('aiokafka').setLevel(logging.INFO)
 
 
 app = FastAPI()
