@@ -1,15 +1,20 @@
 import pyodbc
 from .connector import Database
 from libs.structures import DatabaseType
-
+import logging
+logger = logging.getLogger(__name__)
 database: Database = None
+
+
 @Database.context(DatabaseType.EVENTOS, lower_case_columns=True)
 def get_tracker_info_by_event(event_id):
     while True:
         try:
             return database.select("SELECT DISTINCT ID_VEICULO, ID_RASTREAVEL, ID_CLIENTE, ID_CLIENTE_INSTALADO, ID_EQUIPAMENTO FROM FINANCEIRO.dbo.CADASTRO_ATIVACAO WHERE ID_RASTREAVEL = (SELECT ID_RASTREAVEL FROM EVENTOS.dbo.TB_SISTEMA WHERE CD_REGISTRO_SISTEMA = ?)", [event_id,])[0]
-        except pyodbc.Error:
+        except pyodbc.Error as e:
+            logger.fatal(f"{e} - {event_id} - get_tracker_info_by_event")
             continue
+
 @Database.context(DatabaseType.PRODUCAO)
 def get_trackers(client_id: int = None, user_id: int = None):
     print(f"{user_id!r}, {client_id!r}")

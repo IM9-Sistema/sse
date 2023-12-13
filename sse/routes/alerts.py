@@ -185,7 +185,8 @@ async def get_alerts(background_tasks: fastapi.background.BackgroundTasks, \
         try:
             user_data = users.get_user(current_user)
             break
-        except:
+        except Exception as e:
+            logger.fatal(f"{e} - {current_user} - get_user")
             continue
     args = {}
 
