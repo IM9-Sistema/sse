@@ -1,6 +1,9 @@
 from aiokafka import AIOKafkaConsumer
 from os import environ
 import json
+import logging
+
+logger = logging.getLogger(__name__)
 
 async def consume_from_topic(*topics):
     while True:
@@ -10,5 +13,6 @@ async def consume_from_topic(*topics):
             async for message in consumer:
                 
                 yield message.value, message.offset
-        except:
+        except Exception as e:
+            logging.fatal(f"{e} - consume_from_topic")
             continue
