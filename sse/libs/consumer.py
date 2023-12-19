@@ -1,18 +1,24 @@
-from aiokafka import AIOKafkaConsumer
+from confluent_kafka import Consumer
 from os import environ
 import json
 import logging
 
 logger = logging.getLogger(__name__)
 
-async def consume_from_topic(*topics):
+def consume_from_topic(*topics):
     while True:
         try:
-            consumer = AIOKafkaConsumer(*topics, bootstrap_servers=environ['KAFKA_ADDRESS'], value_deserializer=lambda x: json.loads(x.decode('utf-8')))
-            await consumer.start()
-            async for message in consumer:
-                
-                yield message.value, message.offset
+            logger.info(f"Connecting to {environ['KAFKA_ADDRESS']}")
+            consumer: Consumer = Consumer({
+                'bootstrap.servers': environ['KAFKA_ADDRESS'],
+                'group.id': 'sse',
+            })
+            logger.info(f"Subscribing to {', '.join(topics)}")
+            consumer.subscribe(list(topics))
+            logger.info(f"Subscribed to {", ".join(topics)}, polling...")
+            while True:
+                while data := consumer.poll():
+                    yield json.loads(data.value()), data.offset()
         except Exception as e:
             logging.fatal(f"{e} - consume_from_topic")
             continue
