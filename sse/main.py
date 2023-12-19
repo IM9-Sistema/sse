@@ -1,6 +1,6 @@
 import time
 from fastapi import FastAPI
-from routes import positions, alerts
+from routes import get_routers
 from libs.workers.data import PositionGather, AlertsGather
 import logging
 import pyding
@@ -10,7 +10,8 @@ logging.getLogger('aiokafka').setLevel(logging.INFO)
 
 
 app = FastAPI()
-app.include_router(positions.router)
-app.include_router(alerts.router)
+for router in get_routers():
+	app.include_router(router)
+
 PositionGather.begin()
 AlertsGather.begin()
