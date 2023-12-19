@@ -7,9 +7,9 @@ logger = logging.getLogger(__name__)
 
 
 class PositionGather(Worker):
-    async def work(self):
+    def work(self):
         while True:
-            async for message, id in consume_from_topic('positions'):
+            for message, id in consume_from_topic('positions'):
                 try:
                     pyding.call('position.message', message=message, id=id, tracker_id=message['rastreador']['id'], **message)
                 except KeyError:
@@ -24,9 +24,9 @@ class PositionGather(Worker):
 
 
 class AlertsGather(Worker):
-    async def work(self):
+    def work(self):
         while True:
-            async for message, id in consume_from_topic('contacts', 'database.eventos.EVENTOS.dbo.TB_SISTEMA_TRATATIVAS', 'database.eventos.EVENTOS.dbo.TB_SISTEMA', 'anchors'):
+            for message, id in consume_from_topic('contacts', 'database.eventos.EVENTOS.dbo.TB_SISTEMA_TRATATIVAS', 'database.eventos.EVENTOS.dbo.TB_SISTEMA', 'anchors'):
                 try:
                     pyding.call('alerts.message', id=id, message=message)
                 except KeyError:
