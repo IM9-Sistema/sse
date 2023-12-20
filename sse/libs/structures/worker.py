@@ -11,8 +11,9 @@ class Worker(Thread):
     def __init__(self) -> None:
         super().__init__(None, self.run, daemon=True)
         self.logger = logging.getLogger("uvicorn")
+
     def run(self):
-        logging.info(f"Starting worker {self.name}")
+        self.logger.info(f"Starting worker {self.__class__.__name__}")
         if inspect.iscoroutinefunction(self.work):
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
@@ -20,6 +21,12 @@ class Worker(Thread):
             loop.close()
         else:
             self.work()
+
+    @classmethod
+    def begin(cls):
+        instance = cls()
+        instance.start()
+        return instance
 
     def work(self) -> None:
         pass
