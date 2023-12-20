@@ -1,1 +1,1 @@
-from .connector import Database
+from .connector import Database, RedisCache

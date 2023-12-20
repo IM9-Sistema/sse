@@ -1,6 +1,12 @@
 import collections
+import functools
+import inspect
+import json
 from os import environ
 from typing import Any, Generator
+
+import redis
+from pydantic import BaseModel
 from libs.structures import DatabaseType
 from datetime import datetime, timedelta
 from types import FunctionType, NoneType
@@ -10,6 +16,22 @@ import struct
 import pyodbc
 
 logger = logging.getLogger('uvicorn')
+pool = redis.ConnectionPool.from_url(f'redis://{environ.get('REDIS_HOST')}/0', max_connections=25)
+class RedisCache(object):
+    """
+    RedisCache
+    ---------------
+    Facilita a conexão com o redis
+    """
+    def __init__(self):
+        self.redis = redis.Redis(connection_pool=pool)
+    
+    async def get[T:BaseModel](self,key: str, response: T) -> T:
+        data = self.redis.get(key)
+        return response(**json.loads(data))
+
+    async def set(self, key: str, data: BaseModel):
+        self.redis.set(key, data.model_dump_json())
 
 
 class Database(object):
