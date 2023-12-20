@@ -62,9 +62,6 @@ class AlertsGather(Worker):
         while True:
             for message, id in consume_from_topic('alerts', 'anchors'):
                 try:
-                    if 'event' in message and 'origin' in message and message['origin'] == 'SSE':
-                        pyding.call('overhaul.alerts', id=0, command_event=message['event'], data=message['data'])
-                        continue
                     pyding.call('alerts.message', id=id, message=message)
                 except KeyError:
                     logger.critical("Failed to get data from kafka.")

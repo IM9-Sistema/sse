@@ -90,29 +90,9 @@ def queue_alerts(queue, alert_id = None, events: list = None):
             message: dict = data['message']
 
             match message:
-                case {"schema": {"name": "database.eventos.EVENTOS.dbo.TB_SISTEMA.Envelope", **_sk}, "payload": {"op": "c", "before": None, "after": after, **_pk}, **_k}:
-                    event = "alert_create"
-                    output = after
-                
-                case {"schema": {"name": "database.eventos.EVENTOS.dbo.TB_SISTEMA.Envelope", **_sk}, "payload": {"op": "u", "before": before, "after": after, **_pk}, **_k}:
-                    event = "alert_update"
-                    output = after
-                
-                case {"schema": {"name": "database.eventos.EVENTOS.dbo.TB_SISTEMA_TRATATIVAS.Envelope", **_sk}, "payload": {"op": "u", "before": before, "after": after, **_pk}, **_k}:
-                    event = "notation_update"
-                    output = after
-                
-                case {"schema": {"name": "database.eventos.EVENTOS.dbo.TB_SISTEMA.Envelope", **_sk}, "payload": {"op": "d", "before": before, "after": after, **_pk}, **_k}:
-                    event = "alert_delete"
-                    output = before
-                
-                case {"schema": {"name": "database.eventos.EVENTOS.dbo.TB_SISTEMA_TRATATIVAS.Envelope", **_sk}, "payload": {"op": "d", "before": before, "after": after, **_pk}, **_k}:
-                    event = "notation_delete"
-                    output = before
-                
-                case {"schema": {"name": "database.eventos.EVENTOS.dbo.TB_SISTEMA_TRATATIVAS.Envelope", **_sk}, "payload": {"op": "c", "before": None, "after": after, **_pk}, **_k}:
-                    event = "notation_create"
-                    output = after
+                case {"event": "alert_update"|"alert_create"|"alert_delete"|"notation_create"|"notation_delete"|"notation_update" as _event, "data": _data}:
+                    event = _event
+                    output = _data
                 case {"event": "anchor", "type": _type, "rastreavel_id": _rastr, "user_id": _user_id, "data": _data}:
                     event = f"anchor_{_type}"
                     output = {"id_rastreavel": _rastr, "data": _data}
