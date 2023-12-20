@@ -1,4 +1,6 @@
-from libs.structures import Worker
+from queue import Queue
+from libs.structures import Worker, CommandType, Command
+from libs.database.alerts import get_alert_info, get_notation_info
 from libs.consumer import consume_from_topic
 import pyding
 import logging
@@ -16,11 +18,43 @@ class PositionGather(Worker):
                     logger.critical("Failed to get data from kafka.")
                     logger.critical(f"{message}")
 
-    @classmethod
-    def begin(cls):
-        instance = cls()
-        instance.start()
-        return instance
+
+
+class ProcessAlerts(Worker):
+    def work(self):
+        queue: Queue = pyding.queue(
+            'commands.recieve',
+            command_id=pyding.Contains([
+                    CommandType.ALERT_CREATE,
+                    CommandType.ALERT_DELETE,
+                    CommandType.ALERT_UPDATE
+            ])
+        )
+
+        while True:
+            event = queue.get()
+            command: Command = event['command']
+            alert_data = get_alert_info(command.data['id'])
+            if alert_data:
+                pyding.call('overhaul.alerts', id=command.data['id'], command_event=command.command_id, data=alert_data)
+
+class ProcessNotations(Worker):
+    def work(self):
+        queue: Queue = pyding.queue(
+            'commands.recieve',
+            command_id=pyding.Contains([
+                    CommandType.NOTATION_CREATE,
+                    CommandType.NOTATION_DELETE,
+                    CommandType.NOTATION_UPDATE
+            ])
+        )
+
+        while True:
+            event = queue.get()
+            command: Command = event['command']
+            notation_data = get_notation_info(command.data['id'])
+            if notation_data:
+                pyding.call('overhaul.alerts', id=command.data['id'], command_event=command.command_id, data=notation_data)
 
 
 class AlertsGather(Worker):
@@ -33,9 +67,5 @@ class AlertsGather(Worker):
                     logger.critical("Failed to get data from kafka.")
                     logger.critical(f"{message}")
 
-    @classmethod
-    def begin(cls):
-        instance = cls()
-        instance.start()
-        return instance
+
     
