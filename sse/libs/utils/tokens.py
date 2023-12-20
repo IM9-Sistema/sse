@@ -8,7 +8,7 @@ def get_secret_key() -> bytes:
     return b64decode(environ.get('JWT_KEY'))
 
 def get_sse_key() -> str:
-    return environ.get('SSE_SESSION_KEY')
+    return environ.get('X_SSE_KEY')
 
 def random_string(length: int = None):
 	return "".join(choices(ascii_letters, k=length or 32))
