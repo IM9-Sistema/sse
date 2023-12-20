@@ -1,7 +1,7 @@
 from queue import Queue
 from libs.structures import Worker, CommandType, Command
 from libs.database.alerts import get_alert_info, get_notation_info
-from libs.consumer import consume_from_topic
+from libs.kafka_provider import consume_from_topic
 import pyding
 import logging
 
@@ -36,7 +36,7 @@ class ProcessAlerts(Worker):
             command: Command = event['command']
             alert_data = get_alert_info(command.data['id'])
             if alert_data:
-                pyding.call('overhaul.alerts', id=command.data['id'], command_event=command.command_id, data=alert_data)
+                pyding.call('kafka.publish', topic='alerts', message={"origin": "SSE", "event": command.command_id, "data": alert_data})
 
 class ProcessNotations(Worker):
     def work(self):
@@ -54,14 +54,17 @@ class ProcessNotations(Worker):
             command: Command = event['command']
             notation_data = get_notation_info(command.data['id'])
             if notation_data:
-                pyding.call('overhaul.alerts', id=command.data['id'], command_event=command.command_id, data=notation_data)
+                pyding.call('kafka.publish', topic='alerts', message={"origin": "SSE", "event": command.command_id, "data": notation_data})
 
 
 class AlertsGather(Worker):
     def work(self):
         while True:
-            for message, id in consume_from_topic('contacts', 'database.eventos.EVENTOS.dbo.TB_SISTEMA_TRATATIVAS', 'database.eventos.EVENTOS.dbo.TB_SISTEMA', 'anchors'):
+            for message, id in consume_from_topic('alerts', 'anchors'):
                 try:
+                    if 'event' in message and 'origin' in message and message['origin'] == 'SSE':
+                        pyding.call('overhaul.alerts', id=0, command_event=message['event'], data=message['data'])
+                        continue
                     pyding.call('alerts.message', id=id, message=message)
                 except KeyError:
                     logger.critical("Failed to get data from kafka.")
