@@ -12,7 +12,7 @@ from typing import Annotated, List
 import logging
 import fastapi
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('uvicorn')
 
 router = APIRouter(prefix='/positions')
 

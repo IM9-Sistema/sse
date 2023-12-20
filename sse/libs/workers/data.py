@@ -3,7 +3,7 @@ from libs.consumer import consume_from_topic
 import pyding
 import logging
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('uvicorn')
 
 
 class PositionGather(Worker):

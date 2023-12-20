@@ -10,7 +10,7 @@ import inspect
 class Worker(Thread):
     def __init__(self) -> None:
         super().__init__(None, self.run, daemon=True)
-    
+        self.logger = logging.getLogger("uvicorn")
     def run(self):
         logging.info(f"Starting worker {self.name}")
         if inspect.iscoroutinefunction(self.work):

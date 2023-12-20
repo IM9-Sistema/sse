@@ -9,7 +9,7 @@ import logging
 import struct
 import pyodbc
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('uvicorn')
 
 
 class Database(object):

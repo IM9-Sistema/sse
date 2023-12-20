@@ -2,7 +2,7 @@ import pyodbc
 from .connector import Database
 from libs.structures import DatabaseType
 import logging
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('uvicorn')
 database: Database = None
 
 

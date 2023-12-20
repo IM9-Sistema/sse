@@ -3,7 +3,7 @@ from os import environ
 import json
 import logging
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('uvicorn')
 
 def consume_from_topic(*topics):
     while True:

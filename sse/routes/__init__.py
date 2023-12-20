@@ -4,7 +4,7 @@ from uvicorn.logging import logging
 import pathlib
 import os
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('uvicorn')
 
 
 def get_routers(path: pathlib.Path = None) -> list[APIRouter]:
