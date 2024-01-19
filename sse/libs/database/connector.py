@@ -28,6 +28,8 @@ class RedisCache(object):
     
     async def get[T:BaseModel](self,key: str, response: T) -> T:
         data = self.redis.get(key)
+        if not data:
+            return None
         return response(**json.loads(data))
 
     async def set(self, key: str, data: BaseModel):
