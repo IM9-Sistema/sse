@@ -4,7 +4,9 @@ from requests.exceptions import Timeout
 from sys import exit
 
 try:
-	requests.get("http://127.0.0.1:8000", {"token", environ.get("SSE_USER_BYPASS_TOKEN", "")}, stream=True)
+	resp = requests.get("http://10.15.1.108:8000/positions/subscribe", {"token": environ.get("SSE_USER_BYPASS_TOKEN", "")}, stream=True)
+	assert resp.status_code == 200
 	exit(0)
-except:
+except Exception as e:
+	print(e)
 	exit(1)
