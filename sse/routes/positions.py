@@ -51,14 +51,10 @@ async def get_positions(background_tasks: fastapi.background.BackgroundTasks, \
 						tracker: List[int] = Query(None),
 						clientId: int = Query(None)):
 	# Setup handler
-	user_data = {
-		"id_nivel_acesso": float('inf')
-	}
-	current_user = 1
 
-	if token != environ.get("SSE_USER_BYPASS_TOKEN", -1):
-		current_user = int(get_current_user(token))
-		user_data = users.get_user(current_user)
+		
+	current_user = int(get_current_user(token)) if token != environ.get("SSE_USER_BYPASS_TOKEN", -1) else 1304
+	user_data = users.get_user(current_user)
 
 	args = {}
 
