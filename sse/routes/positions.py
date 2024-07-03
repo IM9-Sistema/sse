@@ -1,6 +1,6 @@
 from os import environ
 import queue
-import time
+from time import time
 from fastapi import Depends, Query, status
 from fastapi.routing import APIRouter
 from fastapi.responses import StreamingResponse
