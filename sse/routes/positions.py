@@ -31,7 +31,7 @@ def queue_positions(queue: queue.Queue, is_debug: bool = None):
 				logger.info("Sent data")
 			data = queue.get(timeout=5)
 			if (size := queue.qsize()) > 50 and (time() - last_warning) >= warn_timeout:
-				yield f"id: {data['id']}\nevent: warning\ndata: {json.dumps({'message': f'You are lagging behind. This connection''s queue length is greater than 50 (currently {size}).', 'error': False})}\n\n"
+				yield f"id: {data['id']}\nevent: warning\ndata: {json.dumps({'message': f'You are lagging behind. This connection\'s queue length is greater than 50 (currently {size}).', 'error': False})}\n\n"
 				last_warning = time()
 
 			yield f"id: {data['id']}\nevent: position_update\ndata: {json.dumps({'type': 1, 'data': data['message']})}\n\n"
