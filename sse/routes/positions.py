@@ -25,22 +25,33 @@ router = APIRouter(prefix='/positions')
 def queue_positions(queue: queue.Queue, is_debug: bool = None, generateJunk: int = None):
 	warn_timeout = 5
 	last_warning = time()
-	if is_debug:
-		logger.info("Sent connected")
 	yield 'id: -1\nevent: connected\ndata: {}\n\n'
-	if generateJunk:
-		for i in range(generateJunk):
-			yield "".join(random.choices(string.ascii_letters, k=1024))
-			yield "\n\n"
 	while True:
 		try:
-			if is_debug:
-				logger.info("Sent data")
 			data = queue.get(timeout=5)
-			if (size := queue.qsize()) > 50 and (time() - last_warning) >= warn_timeout:
-				yield f"id: {data['id']}\nevent: warning\ndata: {json.dumps({'message': f'You are lagging behind. This connection\'s queue length is greater than 50 (currently {size}).', 'error': False})}\n\n"
-				last_warning = time()
+			if (size := queue.qsize()) > 1000:
+				warning = {
+					'message': f'Your connection was killed due to queue overflow. Please double check your connection to avoid positions filling the queue.',
+					'error': True,
+					'details': {
+						"level": "FATAL",
+						"name": "CONNECTION_THROTTLED",
+						"killed_by": "QUEUE_OVERSIZED"
+					}}
+				yield f"id: -1\nevent: fatal\ndata: {json.dumps(warning)}\n\n"
+				return
 
+			if (size := queue.qsize()) > 50 and (time() - last_warning) >= warn_timeout:
+				warning = {
+					'message': f'You are lagging behind. This connection\'s queue length is greater than 50 (currently {size}). If your queue size exceeds 1.000 entries this connection WILL be killed.',
+					'error': False,
+					'details': {
+						"level": "WARNING",
+						"name": "QUEUE_SIZE",
+					}}
+				yield f"id: -1\nevent: warning\ndata: {json.dumps(warning)}\n\n"
+				last_warning = time()
+			
 			yield f"id: {data['id']}\nevent: position_update\ndata: {json.dumps({'type': 1, 'data': data['message']})}\n\n"
 		except Empty:
 			yield 'id: -1\nevent: keep-alive\ndata: {}\n\n'
