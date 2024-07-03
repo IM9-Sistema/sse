@@ -14,6 +14,8 @@ from libs.database import trackers, users
 from queue import Queue, Empty
 from typing import Annotated, List
 import logging
+import string
+import random
 import fastapi
 
 logger = logging.getLogger('uvicorn')
@@ -28,7 +30,7 @@ def queue_positions(queue: queue.Queue, is_debug: bool = None, generateJunk: int
 	yield 'id: -1\nevent: connected\ndata: {}\n\n'
 	if generateJunk:
 		for i in range(generateJunk):
-			yield os.urandom(1024)
+			yield "".join(random.choices(string.ascii_letters, k=1024))
 			yield "\n\n"
 	while True:
 		try:
