@@ -19,12 +19,16 @@ logger = logging.getLogger('uvicorn')
 
 router = APIRouter(prefix='/positions')
 
-def queue_positions(queue: queue.Queue):
+def queue_positions(queue: queue.Queue, is_debug: bool = None):
 	warn_timeout = 5
 	last_warning = time()
+	if is_debug:
+		logger.debug("Sent connected")
 	yield 'id: -1\nevent: connected\ndata: {}\n\n'
 	while True:
 		try:
+			if is_debug:
+				logger.debug("Sent data")
 			data = queue.get(timeout=5)
 			if (size := queue.qsize()) > 50 and (time() - last_warning) >= warn_timeout:
 				yield f"id: {data['id']}\nevent: warning\ndata: {json.dumps({'message': 'You are lagging behind. This connection''s queue length is greater than 50 (currently {size}).', 'error': False})}\n\n"
@@ -57,7 +61,8 @@ def queue_positions(queue: queue.Queue):
 async def get_positions(background_tasks: fastapi.background.BackgroundTasks, \
 						token: str, \
 						tracker: List[int] = Query(None),
-						clientId: int = Query(None)):
+						clientId: int = Query(None),
+						debug: bool = Query(None)):
 	# Setup handler
 
 		
@@ -84,4 +89,4 @@ async def get_positions(background_tasks: fastapi.background.BackgroundTasks, \
 	
 	background_tasks.add_task(unregister, handler)
 
-	return StreamingResponse(queue_positions(queue, ), media_type="text/event-stream")
+	return StreamingResponse(queue_positions(queue, debug), media_type="text/event-stream")
