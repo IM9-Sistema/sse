@@ -1,4 +1,5 @@
 from os import environ
+import os
 import queue
 from time import time
 from fastapi import Depends, Query, status
@@ -19,12 +20,16 @@ logger = logging.getLogger('uvicorn')
 
 router = APIRouter(prefix='/positions')
 
-def queue_positions(queue: queue.Queue, is_debug: bool = None):
+def queue_positions(queue: queue.Queue, is_debug: bool = None, generateJunk: int = None):
 	warn_timeout = 5
 	last_warning = time()
 	if is_debug:
 		logger.info("Sent connected")
 	yield 'id: -1\nevent: connected\ndata: {}\n\n'
+	if generateJunk:
+		for i in range(generateJunk):
+			yield os.urandom(1024)
+			yield "\n\n"
 	while True:
 		try:
 			if is_debug:
@@ -62,10 +67,10 @@ async def get_positions(background_tasks: fastapi.background.BackgroundTasks, \
 						token: str, \
 						tracker: List[int] = Query(None),
 						clientId: int = Query(None),
+						generateJunk: int = Query(None),
 						debug: bool = Query(None)):
 	# Setup handler
 
-		
 	current_user = int(get_current_user(token)) if token != environ.get("SSE_USER_BYPASS_TOKEN", -1) else 1304
 	user_data = users.get_user(current_user)
 
@@ -80,6 +85,8 @@ async def get_positions(background_tasks: fastapi.background.BackgroundTasks, \
 	elif user_data['id_nivel_acesso'] < 1:
 		args['tracker_id'] = pyding.Contains(trackers.get_trackers(user_id=current_user))
 
+
+
 	handler: QueuedHandler = pyding.queue('position.message', **args, return_handler=True)
 	queue: Queue = handler.get_queue()
 
@@ -89,4 +96,4 @@ async def get_positions(background_tasks: fastapi.background.BackgroundTasks, \
 	
 	background_tasks.add_task(unregister, handler)
 
-	return StreamingResponse(queue_positions(queue, debug), media_type="text/event-stream")
+	return StreamingResponse(queue_positions(queue, debug, generateJunk), media_type="text/event-stream")
