@@ -27,7 +27,7 @@ def get_trackers(client_id: int = None, user_id: int = None):
 					{'DECLARE @CLIENTE int = ?;' if client_id else ''}
 					SELECT
 						gar.ID_RASTREAVEL
-					FROM GRID_ATUAL_COMPLETO AS gat
+					FROM GRID_ATUAL_COMPLETO AS gar
 					LEFT OUTER JOIN CADASTRO_USUARIO AS cau
 						ON cau.CD_REGISTRO_USUARIO = @USUARIO
 					WHERE
