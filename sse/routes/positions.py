@@ -1,4 +1,6 @@
 from os import environ
+import queue
+import time
 from fastapi import Depends, Query, status
 from fastapi.routing import APIRouter
 from fastapi.responses import StreamingResponse
@@ -17,11 +19,17 @@ logger = logging.getLogger('uvicorn')
 
 router = APIRouter(prefix='/positions')
 
-def queue_positions(queue):
+def queue_positions(queue: queue.Queue):
+	warn_timeout = 5
+	last_warning = time()
 	yield 'id: -1\nevent: connected\ndata: {}\n\n'
 	while True:
 		try:
 			data = queue.get(timeout=5)
+			if (size := queue.qsize) > 50 and (time() - last_warning) >= warn_timeout:
+				yield f"id: {data['id']}\nevent: warning\ndata: {json.dumps({'message': 'You are lagging behind. This connection''s queue length is greater than 50 (currently {size}).', 'error': False})}\n\n"
+				last_warning = time()
+
 			yield f"id: {data['id']}\nevent: position_update\ndata: {json.dumps({'type': 1, 'data': data['message']})}\n\n"
 		except Empty:
 			yield 'id: -1\nevent: keep-alive\ndata: {}\n\n'
