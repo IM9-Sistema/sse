@@ -33,43 +33,43 @@ def get_trackers(client_id: int = None, user_id: int = None):
 					WHERE
 
 					(
-							(cu.VL_CENTRAL = 1)
+							(cau.VL_CENTRAL = 1)
 							OR (
-									cu.VL_CENTRAL = 0
+									cau.VL_CENTRAL = 0
 									AND (
 												( -- FGR 1 && FCL 1
-													(cu.VL_FILTRO_GRIDS_RASTREAVEIS = 1 AND cu.VL_FILTRO_CLIENTE = 1)
+													(cau.VL_FILTRO_GRIDS_RASTREAVEIS = 1 AND cau.VL_FILTRO_CLIENTE = 1)
 													AND
 													gat.id_cliente = gat.id_cliente_instalado
 													AND
-													(select TOP 1 1 from CADASTRO_USUARIO_PLACA cup where cup.CD_USUARIO = cu.CD_REGISTRO_USUARIO AND cup.CD_RASTREAVEL = gat.ID_RASTREAVEL) = 1
+													(select TOP 1 1 from CADASTRO_USUARIO_PLACA cup where cup.CD_USUARIO = cau.CD_REGISTRO_USUARIO AND cup.CD_RASTREAVEL = gat.ID_RASTREAVEL) = 1
 												
 												)
 												OR
 												( -- FGR 0 && FCL 1
-													(cu.VL_FILTRO_GRIDS_RASTREAVEIS = 0 AND cu.VL_FILTRO_CLIENTE = 1)
+													(cau.VL_FILTRO_GRIDS_RASTREAVEIS = 0 AND cau.VL_FILTRO_CLIENTE = 1)
 													AND
 													gat.id_cliente = gat.id_cliente_instalado
 													
 													AND
-													(select TOP 1 1 from CLIENTES_POR_USUARIO cuc WHERE CUC.CD_USUARIO =cu.CD_REGISTRO_USUARIO AND cuc.CD_CLIENTE IN (gat.id_cliente, gat.id_cliente_instalado)) = 1
+													(select TOP 1 1 from CLIENTES_POR_USUARIO cuc WHERE CUC.CD_USUARIO =cau.CD_REGISTRO_USUARIO AND cuc.CD_CLIENTE IN (gat.id_cliente, gat.id_cliente_instalado)) = 1
 												
 												)
 												OR
 												( -- FGR 1 && FCL 0
-													(cu.VL_FILTRO_GRIDS_RASTREAVEIS = 1 AND cu.VL_FILTRO_CLIENTE = 0)
+													(cau.VL_FILTRO_GRIDS_RASTREAVEIS = 1 AND cau.VL_FILTRO_CLIENTE = 0)
 													--AND
 													--gat.id_cliente = gat.id_cliente_instalado
 													
 													AND
-													gat.ID_RASTREAVEL in (select CD_RASTREAVEL from CADASTRO_USUARIO_PLACA cup where cup.CD_USUARIO = cu.CD_REGISTRO_USUARIO AND cup.CD_RASTREAVEL = gat.ID_RASTREAVEL)
+													gat.ID_RASTREAVEL in (select CD_RASTREAVEL from CADASTRO_USUARIO_PLACA cup where cup.CD_USUARIO = cau.CD_REGISTRO_USUARIO AND cup.CD_RASTREAVEL = gat.ID_RASTREAVEL)
 												
 												)
 												OR
 												( -- FGR 0 && FCL 0
-													(cu.VL_FILTRO_GRIDS_RASTREAVEIS = 0 AND cu.VL_FILTRO_CLIENTE = 0)
+													(cau.VL_FILTRO_GRIDS_RASTREAVEIS = 0 AND cau.VL_FILTRO_CLIENTE = 0)
 													AND
-													(select TOP 1 1 from CLIENTES_POR_USUARIO cuc WHERE CUC.CD_USUARIO =cu.CD_REGISTRO_USUARIO AND cuc.CD_CLIENTE IN (gat.id_cliente, gat.id_cliente_instalado)) = 1
+													(select TOP 1 1 from CLIENTES_POR_USUARIO cuc WHERE CUC.CD_USUARIO =cau.CD_REGISTRO_USUARIO AND cuc.CD_CLIENTE IN (gat.id_cliente, gat.id_cliente_instalado)) = 1
 												)
 									)
 							)
