@@ -109,4 +109,4 @@ async def get_positions(background_tasks: fastapi.background.BackgroundTasks, \
 	
 	background_tasks.add_task(unregister, handler)
 
-	return StreamingResponse(queue_positions(queue, debug, generateJunk, args['tracker_id'].values if 'tracker_id' in args else None), media_type="text/event-stream")
+	return StreamingResponse(queue_positions(queue, debug, generateJunk, args['tracker_id'].value if 'tracker_id' in args else None), media_type="text/event-stream")
