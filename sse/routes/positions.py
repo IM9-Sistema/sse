@@ -22,10 +22,10 @@ logger = logging.getLogger('uvicorn')
 
 router = APIRouter(prefix='/positions')
 
-def queue_positions(queue: queue.Queue, is_debug: bool = None, generateJunk: int = None):
+def queue_positions(queue: queue.Queue, is_debug: bool = None, generateJunk: int = None, trackers: list[int] = None):
 	warn_timeout = 5
 	last_warning = time()
-	yield 'id: -1\nevent: connected\ndata: {}\n\n'
+	yield f'id: -1\nevent: connected\ndata: {json.dumps({"included-trackers": trackers or ["*"]})}\n\n'
 	while True:
 		try:
 			data = queue.get(timeout=5)
@@ -109,4 +109,4 @@ async def get_positions(background_tasks: fastapi.background.BackgroundTasks, \
 	
 	background_tasks.add_task(unregister, handler)
 
-	return StreamingResponse(queue_positions(queue, debug, generateJunk), media_type="text/event-stream")
+	return StreamingResponse(queue_positions(queue, debug, generateJunk, args['tracker_id'].values if 'tracker_id' in args else None), media_type="text/event-stream")
