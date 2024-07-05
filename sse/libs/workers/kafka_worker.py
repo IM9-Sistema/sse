@@ -18,5 +18,5 @@ class KafkaPublish(Worker):
 		producer = get_producer()
 		while True:
 			data = queue.get()
-			logger.info(f"Producing kafka message {data["topic"]}@{data["message"]}")
+			logger.debug(f"Producing kafka message {data["topic"]}@{data["message"]}")
 			produce(producer, data['topic'], data['message'])
