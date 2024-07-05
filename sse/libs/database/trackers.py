@@ -18,7 +18,6 @@ def get_tracker_info_by_event(event_id):
 
 @Database.context(DatabaseType.PRODUCAO)
 def get_trackers(client_id: int = None, user_id: int = None):
-	print(f"{user_id!r}, {client_id!r}")
 	values = []
 	if user_id: values.append(user_id)
 	if client_id: values.append(client_id)
