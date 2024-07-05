@@ -11,6 +11,6 @@ def handle(topic: str):
 		yield f"id: {id}\nevent: message\ntopic: {topic}\ndata: {data}"
 
 @router.get('/subscribe/{topic}')
-async def authenticate(topic: str, session: Session = Depends(get_sse_session)) -> Response[Session]:
+async def authenticate(topic: str, session: Session = Depends(get_sse_session)):
 	return StreamingResponse(handle(), media_type="text/event-stream")
     
