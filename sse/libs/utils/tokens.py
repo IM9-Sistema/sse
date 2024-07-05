@@ -12,3 +12,6 @@ def get_sse_key() -> str:
 
 def random_string(length: int = None):
 	return "".join(choices(ascii_letters, k=length or 32))
+
+def get_pepper() -> bytes:
+    return b64decode(environ.get('SECRET_PEPPER')).decode("utf-8")

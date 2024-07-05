@@ -30,9 +30,10 @@ def get_current_user(token: Annotated[str, Depends(oauth_scheme)]):
     except JWTError as e:
         raise credentials_exception
 
+
 async def get_sse_session(x_sse_session: Annotated[str, Header()]) -> Session:
     cache = RedisCache()
-    session = await cache.get(x_sse_session, Session)
+    session = await cache.get(Session.get_hash(x_sse_session), Session)
     if not session:
         raise HTTPException(
             status.HTTP_401_UNAUTHORIZED,
@@ -55,7 +56,7 @@ async def create_sse_session(request: Request, session_identification: Annotated
         id=uuid4(),
         token=random_string(128)
     )
-    await redis.set(session.token, session)
+    await redis.set(session.hash, session)
     return session
 
 
