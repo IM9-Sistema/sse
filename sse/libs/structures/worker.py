@@ -13,7 +13,7 @@ class Worker(Thread):
         self.logger = logging.getLogger("uvicorn")
 
     def run(self):
-        self.logger.info(f"Starting worker {self.__class__.__name__}")
+        self.logger.debug(f"Starting worker {self.__class__.__name__}")
         if inspect.iscoroutinefunction(self.work):
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)

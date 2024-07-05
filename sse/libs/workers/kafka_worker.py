@@ -14,7 +14,7 @@ class KafkaPublish(Worker):
 			'kafka.publish'
 		)
 
-		logger.info(f"Getting publisher")
+		logger.debug(f"Getting publisher")
 		producer = get_producer()
 		while True:
 			data = queue.get()

@@ -104,7 +104,7 @@ async def get_positions(background_tasks: fastapi.background.BackgroundTasks, \
 	queue: Queue = handler.get_queue()
 
 	def unregister(handler: QueuedHandler):
-		logger.info(f"Closing handler ({handler})")
+		logger.debug(f"Closing handler ({handler})")
 		handler.unregister()
 	
 	background_tasks.add_task(unregister, handler)

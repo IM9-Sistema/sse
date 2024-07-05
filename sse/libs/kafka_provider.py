@@ -16,9 +16,9 @@ def produce(producer: KafkaProducer, topic: str, message: str):
 def consume_from_topic(*topics):
     while True:
         try:
-            logger.info(f"Connecting to {environ['KAFKA_ADDRESS']}")
+            logger.debug(f"Connecting to {environ['KAFKA_ADDRESS']}")
             consumer: KafkaConsumer = KafkaConsumer(*topics, bootstrap_servers=environ['KAFKA_ADDRESS'], value_deserializer=lambda x: json.loads(x.decode('utf-8')))
-            logger.info(f"Subscribed to {", ".join(topics)}, polling...")
+            logger.debug(f"Subscribed to {", ".join(topics)}, polling...")
             for msg in consumer:
                 yield msg.value, msg.offset
         except Exception as e:

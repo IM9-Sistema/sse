@@ -17,7 +17,7 @@ async def event_emitter(websocket: WebSocket, session: Session = Depends(get_sse
 		while data := await websocket.receive_json():
 			try:
 				command = Command(**(data|{'origin': session}))
-				logger.info(f'Recieved from {session.session.origin} @ {session.session.name}')
+				logger.debug(f'Recieved from {session.session.origin} @ {session.session.name}')
 				pyding.call('commands.recieve', command=command, command_id=command.command_id)
 				response = Response.from_status(ResponseStatus.QUEUED, data=command)
 			except ValidationError as e:
