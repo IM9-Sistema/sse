@@ -46,6 +46,8 @@ async def relay(request: Request):
             rp_resp = await client.send(rp_req, stream=True)
         except Exception as e:
             print("Conn error", e)
+            if is_first_time:
+                continue
             yield gen_sse_event(id=-1, event="backend_timeout")
             continue
         
