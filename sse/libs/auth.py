@@ -45,7 +45,7 @@ async def create_sse_session(request: Request, session_identification: Annotated
     if x_sse_key != get_sse_key():
         raise HTTPException(
             status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect sse key."
+            detail="Incorrect sse key or invalid session info."
         )
 
     redis = RedisCache()
