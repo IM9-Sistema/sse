@@ -13,7 +13,7 @@ class PositionGather(Worker):
         while True:
             for message, id in consume_from_topic('positions'):
                 try:
-                    pyding.call('position.message', message=message, id=id, tracker_id=message['rastreador']['id'], **message)
+                    pyding.call('position.message', message=message, id=int(id), tracker_id=int(message['rastreador']['id']), **message)
                 except KeyError:
                     logger.critical("Failed to get data from kafka.")
                     logger.critical(f"{message}")
