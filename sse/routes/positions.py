@@ -66,16 +66,6 @@ def queue_positions(queue: queue.Queue, is_debug: bool = None, generateJunk: int
 				}
 			}
 		)
-@router.get('/',
-			responses={
-				200: {
-					'content': {
-						'text/event-stream': "id: int\nevent: position_update\ndata: {}\n\n"
-					},
-					'description': 'Depricated. use /subscribe'
-				}
-			}
-		)
 async def get_positions(background_tasks: fastapi.background.BackgroundTasks, \
 						token: str, \
 						tracker: List[int] = Query(None),

@@ -130,16 +130,6 @@ def queue_alerts(queue, alert_id = None, events: list = None):
 
 
 
-@router.get('/',
-			responses={
-				200: {
-					'content': {
-						'text/event-stream': "id: int\nevent: eventname\ndata: {}\n\n"
-					},
-					'description': 'Depricated. use /subscribe'
-				}
-			}
-		)
 @router.get('/subscribe',
 			responses={
 				200: {
