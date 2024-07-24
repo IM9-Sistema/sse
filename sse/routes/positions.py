@@ -10,7 +10,7 @@ from pyding.structures import QueuedHandler
 from libs.auth import get_current_user
 import json
 from libs.structures import TokenData
-from libs.database import trackers, users
+from libs.database import trackers, users, RedisCache, equip_pool
 from queue import Queue, Empty
 from typing import Annotated, List
 import logging

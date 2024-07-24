@@ -9,7 +9,7 @@ sys.modules['kafka.vendor.six.moves'] = m
 import time
 from fastapi import FastAPI
 from routes import get_routers
-from libs.workers.data import PositionGather, AlertsGather, ProcessAlerts, ProcessNotations
+from libs.workers.data import PositionGather, AlertsGather, ProcessAlerts, ProcessNotations, EquipamentsGather
 from libs.workers.kafka_worker import KafkaPublish
 import logging
 import pyding
@@ -38,3 +38,4 @@ AlertsGather.begin()
 ProcessAlerts.begin()
 ProcessNotations.begin()
 KafkaPublish.begin()
+EquipamentsGather.begin()

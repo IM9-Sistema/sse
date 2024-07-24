@@ -1,6 +1,8 @@
 from queue import Queue
 from libs.structures import Worker, CommandType, Command
 from libs.database.alerts import get_alert_info, get_notation_info
+from libs.database.equip import get_equip_serial
+from libs.database import RedisCache, equip_pool
 from libs.kafka_provider import consume_from_topic
 import pyding
 import logging
@@ -10,13 +12,20 @@ logger = logging.getLogger('uvicorn')
 
 class PositionGather(Worker):
     def work(self):
+        cache = RedisCache(equip_pool)
+        
         while True:
             for message, id in consume_from_topic('positions'):
+                match message:
+                    case {"rastreador": {"equipamento": {"id": id, **_eq}, **_rastr}, **payload}:
+                        message['rastreador']['equipamento']['serial'] = int(cache.get(id))
+                        
                 try:
                     pyding.call('position.message', message=message, id=int(id), tracker_id=int(message['rastreador']['id']), **message)
                 except KeyError:
                     logger.critical("Failed to get data from kafka.")
                     logger.critical(f"{message}")
+
 
 
 
@@ -56,6 +65,14 @@ class ProcessNotations(Worker):
             if notation_data:
                 pyding.call('kafka.publish', topic='alerts', message={"origin": "SSE", "event": command.command_id, "data": notation_data})
 
+
+class EquipamentsGather(Worker):
+    def work(self):
+        while True:
+            cache = RedisCache(equip_pool)
+            data = get_equip_serial()
+            for equip in data:
+                cache.set(equip['key'], equip['value'])
 
 class AlertsGather(Worker):
     def work(self):

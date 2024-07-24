@@ -16,24 +16,28 @@ import struct
 import pyodbc
 
 logger = logging.getLogger('uvicorn')
-pool = redis.ConnectionPool.from_url(f'redis://{environ.get('REDIS_HOST')}/0', max_connections=25)
+auth_pool = redis.ConnectionPool.from_url(f'redis://{environ.get('REDIS_HOST')}/0', max_connections=5)
+equip_pool = redis.ConnectionPool.from_url(f'redis://{environ.get('REDIS_HOST')}/1', max_connections=200)
+
 class RedisCache(object):
     """
     RedisCache
     ---------------
     Facilita a conexão com o redis
     """
-    def __init__(self):
-        self.redis = redis.Redis(connection_pool=pool)
+    def __init__(self, pool=None):
+        self.redis = redis.Redis(connection_pool=pool or auth_pool)
     
-    async def get[T:BaseModel](self,key: str, response: T) -> T:
+    async def get[T:BaseModel](self,key: str, response: T = None) -> T:
         data = self.redis.get(key)
+        if not response:
+            return data
         if not data:
             return None
         return response(**json.loads(data))
 
     async def set(self, key: str, data: BaseModel):
-        self.redis.set(key, data.model_dump_json())
+        self.redis.set(key, data.model_dump_json() if isinstance(data, BaseModel) else data)
 
 
 class Database(object):
