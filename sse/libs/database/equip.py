@@ -6,7 +6,7 @@ logger = logging.getLogger('uvicorn')
 database: Database = None
 
 
-@Database.context(DatabaseType.EVENTOS, lower_case_columns=True)
+@Database.context(DatabaseType.PRODUCAO, lower_case_columns=True)
 def get_equip_serial():
 	while True:
 		try:
