@@ -19,7 +19,8 @@ class PositionGather(Worker):
             for message, id in consume_from_topic('positions'):
                 match message:
                     case {"rastreador": {"equipamento": {"id": id, **_eq}, **_rastr}, **payload}:
-                        message['rastreador']['equipamento']['serial'] = int(asyncio.run(cache.get(id)))
+                        if value := asyncio.run(cache.get(id)):
+                            message['rastreador']['equipamento']['serial'] = int(value)
                         
                 try:
                     pyding.call('position.message', message=message, id=int(id), tracker_id=int(message['rastreador']['id']), **message)
@@ -73,7 +74,7 @@ class EquipamentsGather(Worker):
             cache = RedisCache(equip_pool)
             data = get_equip_serial()
             for equip in data:
-                cache.set(equip['key'], equip['value'])
+                asyncio.run(cache.set(equip['key'], equip['value']))
 
 class AlertsGather(Worker):
     def work(self):
