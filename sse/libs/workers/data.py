@@ -75,10 +75,8 @@ class EquipamentsGather(Worker):
             cache = RedisCache(equip_pool)
             data = get_equip_serial()
             for equip in data:
-                print(equip)
                 await cache.set(equip['key'], equip['value'])
-            print("Done")
-            asyncio.sleep(5)
+            asyncio.sleep(60*60*5)
 
 class AlertsGather(Worker):
     def work(self):
