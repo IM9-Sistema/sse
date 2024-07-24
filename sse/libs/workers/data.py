@@ -1,3 +1,4 @@
+import asyncio
 from queue import Queue
 from libs.structures import Worker, CommandType, Command
 from libs.database.alerts import get_alert_info, get_notation_info
@@ -18,7 +19,7 @@ class PositionGather(Worker):
             for message, id in consume_from_topic('positions'):
                 match message:
                     case {"rastreador": {"equipamento": {"id": id, **_eq}, **_rastr}, **payload}:
-                        message['rastreador']['equipamento']['serial'] = int(cache.get(id))
+                        message['rastreador']['equipamento']['serial'] = int(asyncio.run(cache.get(id)))
                         
                 try:
                     pyding.call('position.message', message=message, id=int(id), tracker_id=int(message['rastreador']['id']), **message)
