@@ -22,7 +22,6 @@ class PositionGather(Worker):
                     case {"rastreador": {"equipamento": {"id": id, **_eq}, **_rastr}, **payload}:
                         if value := asyncio.run(cache.get(id)):
                             message['rastreador']['equipamento']['serial'] = int(value)
-                        print(value)
                         
                 try:
                     pyding.call('position.message', message=message, id=int(id), tracker_id=int(message['rastreador']['id']), **message)
@@ -71,13 +70,15 @@ class ProcessNotations(Worker):
 
 
 class EquipamentsGather(Worker):
-    def work(self):
+    async def work(self):
         while True:
             cache = RedisCache(equip_pool)
             data = get_equip_serial()
             for equip in data:
-                asyncio.run(cache.set(equip['key'], equip['value']))
-            sleep(5)
+                print(equip)
+                await cache.set(equip['key'], equip['value'])
+            print("Done")
+            asyncio.sleep(5)
 
 class AlertsGather(Worker):
     def work(self):
