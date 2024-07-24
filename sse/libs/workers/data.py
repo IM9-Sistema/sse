@@ -21,7 +21,7 @@ class PositionGather(Worker):
                 match message:
                     case {"rastreador": {"equipamento": {"id": id, **_eq}, **_rastr}, **payload}:
                         if value := asyncio.run(cache.get(id)):
-                            message['rastreador']['equipamento']['serial'] = int(value)
+                            message['rastreador']['equipamento']['serial'] = value.decode("utf-8")
                         
                 try:
                     pyding.call('position.message', message=message, id=int(id), tracker_id=int(message['rastreador']['id']), **message)
