@@ -1,5 +1,6 @@
 import asyncio
 from queue import Queue
+from time import sleep
 from libs.structures import Worker, CommandType, Command
 from libs.database.alerts import get_alert_info, get_notation_info
 from libs.database.equip import get_equip_serial
@@ -76,6 +77,7 @@ class EquipamentsGather(Worker):
             data = get_equip_serial()
             for equip in data:
                 asyncio.run(cache.set(equip['key'], equip['value']))
+            sleep(5)
 
 class AlertsGather(Worker):
     def work(self):
