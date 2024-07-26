@@ -14,14 +14,14 @@ logger = logging.getLogger('uvicorn')
 
 class PositionGather(Worker):
     def work(self):
-        cache = RedisCache(equip_pool)
+        equip_data = {int(i['key']): str(i['value']) for i in get_equip_serial()}
         
         while True:
             for message, id in consume_from_topic('positions'):
                 match message:
                     case {"rastreador": {"equipamento": {"id": id, **_eq}, **_rastr}, **payload}:
-                        if value := asyncio.run(cache.get(id)):
-                            message['rastreador']['equipamento']['serial'] = value.decode("utf-8")
+                        if int(id) in equip_data:
+                            message['rastreador']['equipamento']['serial'] = equip_data[int(id)]
                         
                 try:
                     pyding.call('position.message', message=message, id=int(id), tracker_id=int(message['rastreador']['id']), **message)
@@ -68,15 +68,6 @@ class ProcessNotations(Worker):
             if notation_data:
                 pyding.call('kafka.publish', topic='alerts', message={"origin": "SSE", "event": command.command_id, "data": notation_data})
 
-
-class EquipamentsGather(Worker):
-    async def work(self):
-        while True:
-            cache = RedisCache(equip_pool)
-            data = get_equip_serial()
-            for equip in data:
-                await cache.set(equip['key'], equip['value'])
-            asyncio.sleep(60*60*5)
 
 class AlertsGather(Worker):
     def work(self):
