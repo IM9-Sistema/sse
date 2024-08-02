@@ -13,4 +13,4 @@ RUN apt-get install -y unixodbc-dev
 RUN apt-get install -y libgssapi-krb5-2
 
 COPY . /sse/.
-CMD cd /sse/ && uvicorn main:app --host 0.0.0.0 --workers 20
+CMD cd /sse/ && uvicorn main:app --host 0.0.0.0
