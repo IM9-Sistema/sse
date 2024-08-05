@@ -51,8 +51,8 @@ def queue_positions(queue: queue.Queue, is_debug: bool = None, generateJunk: int
 					}}
 				yield f"id: -1\nevent: warning\ndata: {json.dumps(warning)}\n\n"
 				last_warning = time()
-			
-			yield f"id: {data['id']}\nevent: position_update\ndata: {json.dumps({'type': 1, 'data': data['message']})}\n\n"
+			yield f"id: {data['id']}\nevent: position_update\ndata: {json.dumps({'type': 1, 'data': data['message']})}\nqueue_size: {queue.qsize()}\n\n"
+			queue.task_done()
 		except Empty:
 			yield 'id: -1\nevent: keep-alive\ndata: {}\n\n'
 
