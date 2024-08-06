@@ -19,9 +19,9 @@ class PositionGather(Worker):
         while True:
             for message, id in consume_from_topic('positions'):
                 match message:
-                    case {"rastreador": {"equipamento": {"id": id, **_eq}, **_rastr}, **payload}:
-                        if int(id) in equip_data:
-                            message['rastreador']['equipamento']['serial'] = equip_data[int(id)]
+                    case {"rastreador": {"equipamento": {"id": equip_id, **_eq}, **_rastr}, **payload}:
+                        if int(equip_id) in equip_data:
+                            message['rastreador']['equipamento']['serial'] = equip_data[int(equip_id)]
                         
                 try:
                     pyding.call('position.message', message=message, id=int(id), tracker_id=int(message['rastreador']['id']), **message)
