@@ -25,6 +25,7 @@ class ChangingReferece[T]:
 def gen_sse_event(**kwargs):
     return "\n".join([f'{k}: {v if not isinstance(v, dict) else dumps(v)}' for k, v in kwargs.items()])+"\n\n"
 
+
 async def relay(request: Request):
     is_first_time = True
     request_content = b""
@@ -73,7 +74,7 @@ async def relay(request: Request):
             await current_conn.object.aclose()
             yield gen_sse_event(id=-1, event="backend_disconnected")
             continue
-        
+
 
 @app.route("/{path:path}", include_in_schema=False)
 async def route(request: Request):
