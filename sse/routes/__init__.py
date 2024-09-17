@@ -14,7 +14,7 @@ def get_routers(path: pathlib.Path = None) -> list[APIRouter]:
 
     routers = []
     for file in os.listdir(path):
-        if file.startswith('__'):
+        if file.startswith('__') or file.startswith('-'):
             continue
 
         if os.path.isdir(path/file):

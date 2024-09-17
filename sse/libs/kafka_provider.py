@@ -26,7 +26,7 @@ def consume_from_topic(*topics):
     while True:
         try:
             logger.debug(f"Connecting to {environ['KAFKA_ADDRESS']}")
-            consumer: KafkaConsumer = KafkaConsumer(*topics, bootstrap_servers=environ['KAFKA_ADDRESS'], value_deserializer=lambda x: fix_ints(json.loads(x.decode('utf-8'))))
+            consumer: KafkaConsumer = KafkaConsumer(*topics, max_poll_interval_ms=1, max_poll_records=10000, bootstrap_servers=environ['KAFKA_ADDRESS'], value_deserializer=lambda x: json.loads(x.decode('utf-8')))
             logger.debug(f"Subscribed to {", ".join(topics)}, polling...")
             for msg in consumer:
                 yield msg.value, msg.offset

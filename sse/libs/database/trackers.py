@@ -17,7 +17,7 @@ def get_tracker_info_by_event(event_id):
 			continue
 
 @Database.context(DatabaseType.PRODUCAO)
-def get_trackers(client_id: int = None, user_id: int = None):
+def get_trackers(client_id: int = None, user_id: int = None) -> list[int]:
 	values = []
 	if user_id: values.append(user_id)
 	if client_id: values.append(client_id)
