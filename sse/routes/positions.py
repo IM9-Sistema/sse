@@ -18,7 +18,7 @@ def handle(trackables_ids: list[int], user_id, offset=None):
 		for p in partitions:
 			p.offset = offset or -1
 		consumer.assign(partitions)
-	
+	consumer.subscribe(["events__positions"], on_assign=assignment)
 	while True:
 		data = json.loads(consumer.poll().value())
 		if not data: continue
