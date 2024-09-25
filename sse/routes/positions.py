@@ -7,19 +7,29 @@ from libs.auth import get_current_user
 from libs.kafka_provider import consume_from_topic
 from standards.structures import Event, Position, PrimitivePosition
 from libs.database import trackers, users
+from confluent_kafka import Consumer
 
 router = APIRouter(prefix='/positions')
 
-def handle(trackables_ids: list[int]):
+def handle(trackables_ids: list[int], user_id, offset=None):
 	yield 'id: -1\nevent: connected'
-	for data, id in consume_from_topic('events__positions'):
+	consumer = Consumer({"bootstrap.servers": "10.15.1.108:9092", "group.id":f"user_{user_id}"})
+	def assignment(consumer, partitions):
+		for p in partitions:
+			p.offset = offset or -1
+		consumer.assign(partitions)
+	
+	while True:
+		data = json.loads(consumer.poll().value())
+		if not data: continue
 		if not 'trackable' in data['data']: continue
 		if trackables_ids and data['data']['trackable']['id'] not in trackables_ids: continue
+
 		yield f"id: {id}\nevent: message\nheaders: {{'content-type': 'application/json'}}\ndata: {json.dumps(data)}\n\n"
 
 
 @router.get('/subscribe')
-async def get_positions(token: str, trackableId: List[int] = Query(None), clientId: int = Query(None	)) -> Event[Position]:
+async def get_positions(token: str, trackableId: List[int] = Query(None), clientId: int = Query(None), offset: int = Query(None)) -> Event[Position]:
 
 	current_user = int(get_current_user(token)) if token != environ.get("SSE_USER_BYPASS_TOKEN", -1) else 1304
 	user_data = users.get_user(current_user)
@@ -36,4 +46,4 @@ async def get_positions(token: str, trackableId: List[int] = Query(None), client
 		trackable_ids = trackers.get_trackers(user_id=current_user)
 
 
-	return StreamingResponse(handle(trackable_ids), media_type="text/event-stream")
+	return StreamingResponse(handle(trackable_ids, current_user, offset), media_type="text/event-stream")
