@@ -1,5 +1,6 @@
 import json
 from os import environ
+from random import randint
 from typing import List
 from fastapi import APIRouter,Query
 from fastapi.responses import StreamingResponse
@@ -7,25 +8,27 @@ from libs.auth import get_current_user
 from libs.kafka_provider import consume_from_topic
 from standards.structures import Event, Position, PrimitivePosition
 from libs.database import trackers, users
-from confluent_kafka import Consumer
+from confluent_kafka import Consumer, OFFSET_END
 
 router = APIRouter(prefix='/positions')
 
 def handle(trackables_ids: list[int], user_id, offset=None):
-	yield 'id: -1\nevent: connected'
-	consumer = Consumer({"bootstrap.servers": "10.15.1.108:9092", "group.id":f"user_{user_id}"})
+	yield 'id: -1\nevent: connected\n\n'
+	consumer = Consumer({"bootstrap.servers": "10.15.1.108:9092", "group.id":f"{randint(10000, 99999)}"})
 	def assignment(consumer, partitions):
 		for p in partitions:
-			p.offset = offset or -1
+			p.offset = offset or OFFSET_END
 		consumer.assign(partitions)
 	consumer.subscribe(["events__positions"], on_assign=assignment)
 	while True:
-		data = json.loads(consumer.poll().value())
+		#print('poll')
+		msg = consumer.poll()
+		data = json.loads(msg.value())
 		if not data: continue
 		if not 'trackable' in data['data']: continue
 		if trackables_ids and data['data']['trackable']['id'] not in trackables_ids: continue
 
-		yield f"id: {id}\nevent: message\nheaders: {{'content-type': 'application/json'}}\ndata: {json.dumps(data)}\n\n"
+		yield f"id: {msg.offset()}\nevent: message\nheaders: {{'content-type': 'application/json'}}\ndata: {json.dumps(data)}\n\n"
 
 
 @router.get('/subscribe')
