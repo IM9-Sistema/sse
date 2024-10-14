@@ -73,6 +73,7 @@ def convert(data: dict):
 
 def queue_alerts(queue, alert_id = None, events: list = None):
 	yield 'id: -1\nevent: connected\n\n'
+	tracker_data = {}
 	consumer = Consumer({"bootstrap.servers": "10.15.1.108:9092", "group.id":f"{randint(10000, 99999)}"})
 	def assignment(consumer, partitions):
 		for p in partitions:
