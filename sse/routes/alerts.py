@@ -11,6 +11,8 @@ from queue import Queue, Empty
 from typing import Annotated, List
 import logging
 import fastapi
+from confluent_kafka import Consumer, OFFSET_END
+from random import randint
 
 logger = logging.getLogger('uvicorn')
 
@@ -68,8 +70,16 @@ def convert(data: dict):
 			output[k] = v
 	return output
 
+
 def queue_alerts(queue, alert_id = None, events: list = None):
-	tracker_data = {}
+	yield 'id: -1\nevent: connected\n\n'
+	consumer = Consumer({"bootstrap.servers": "10.15.1.108:9092", "group.id":f"{randint(10000, 99999)}"})
+	def assignment(consumer, partitions):
+		for p in partitions:
+			p.offset = OFFSET_END
+		consumer.assign(partitions)
+	consumer.subscribe(["alerts"], on_assign=assignment)
+
 	if alert_id is not None:
 		tries = 0
 		yield f'id: -1\nevent: fetching_data\nalert_id: {alert_id}\ndata: {{}}\n\n'
@@ -91,9 +101,11 @@ def queue_alerts(queue, alert_id = None, events: list = None):
 	last_data = {}
 	while True:
 		try:
+			msg = consumer.poll()
+			data = json.loads(msg.value())
+			if not data: continue
 			
-			data = queue.get(timeout=5)
-			message: dict = data['message']
+			message: dict = data
 
 			match message:
 				case {"event": "alert_update"|"alert_create"|"alert_delete"|"notation_create"|"notation_delete"|"notation_update" as _event, "data": _data}:
@@ -120,9 +132,10 @@ def queue_alerts(queue, alert_id = None, events: list = None):
 			or ('id_veiculo' in tracker_data and "id_veiculo" in output and output["id_veiculo"] != tracker_data['id_veiculo'])\
 			or (alert_id is not None and "alert_id" in output and output["alert_id"] != alert_id):
 
-				yield f"id: {data['id']}\nevent: event-skip-notice\nskipped: {event}\nmeta-event-id: {output['event_id'] if 'event_id' in output else 'Not defined.'}\ndata: {{}}\n\n"
+				yield f"id: {msg.offset()}\nevent: event-skip-notice\nskipped: {event}\nmeta-event-id: {output['event_id'] if 'event_id' in output else 'Not defined.'}\ndata: {{}}\n\n"
 				continue
-			yield f"id: {data['id']}\n"
+			yield f"id: {msg.offset()}\n"
+			yield f"headers: {{'content-type': 'application/json'}}\n"
 			yield f"event: {event}\n"
 			yield f"data: {json.dumps(output)}\n\n"
 		except Empty:
@@ -165,7 +178,6 @@ async def get_alerts(background_tasks: fastapi.background.BackgroundTasks, \
 		except Exception as e:
 			logger.fatal(f"{e} - {current_user} - get_user")
 			continue
-	args = {}
 
 	if user_data['id_nivel_acesso'] < 1:
 		raise HTTPException(
@@ -176,13 +188,4 @@ async def get_alerts(background_tasks: fastapi.background.BackgroundTasks, \
 		}
 	)
 
-	handler: QueuedHandler = pyding.queue('alerts.message', **args, return_handler=True)
-	queue: Queue = handler.get_queue()
-
-	def unregister(handler: QueuedHandler):
-		logger.debug(f"Closing handler ({handler})")
-		handler.unregister()
-	
-	background_tasks.add_task(unregister, handler)
-
-	return StreamingResponse(queue_alerts(queue, id, events[type] if type else None), media_type="text/event-stream")
+	return StreamingResponse(queue_alerts(None, id, events[type] if type else None), media_type="text/event-stream")
