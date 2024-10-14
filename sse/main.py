@@ -33,8 +33,8 @@ apm = make_apm_client({
 app.add_middleware(ElasticAPM, client=apm)
 
 # Initialize Kafka Consumers
-PositionGather.begin()
-AlertsGather.begin()
+#PositionGather.begin()
+#AlertsGather.begin()
 ProcessAlerts.begin()
 ProcessNotations.begin()
 KafkaPublish.begin()
