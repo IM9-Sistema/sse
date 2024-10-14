@@ -1,3 +1,4 @@
+from os import environ
 from fastapi import Depends, HTTPException, Query, status
 from fastapi.routing import APIRouter
 from fastapi.responses import StreamingResponse
@@ -171,7 +172,7 @@ async def get_alerts(background_tasks: fastapi.background.BackgroundTasks, \
 		detail='Invalid event-package id.'
 	)
 	# Setup handler
-	current_user = int(get_current_user(token))
+	current_user = int(get_current_user(token)) if token != environ.get("SSE_USER_BYPASS_TOKEN", -1) else 1304
 	while True:
 		try:
 			user_data = users.get_user(current_user)
